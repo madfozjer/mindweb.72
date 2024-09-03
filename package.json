@@ -1,15 +1,19 @@
 {
   "name": "mindweb-.73-(demo)",
-  "version": "1.0.0",
+  "version": "dev",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "style": "tailwindcss -i ./public/input.css -o ./dist/style.css --watch",
+    "init-server": "start node index.js",
+    "dev": "npm run init-server && npm run style "
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "madfozjer.net",
+  "license": "UNLICENSED",
+  "description": "proof-of-concept demo",
   "devDependencies": {
     "tailwindcss": "^3.4.10"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
   }
 }
