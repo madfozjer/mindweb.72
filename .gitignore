@@ -1,0 +1,7 @@
+node_modules/
+
+#my todo list
+what.todo
+
+#my vsc workspace file
+mindweb-demo.code-workspace
