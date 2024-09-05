@@ -1,15 +1,7 @@
 node_modules/
 
-<<<<<<< HEAD
-#my todo's
+#all todo's
 *.todo
 
-#workspace files
+#vsc workspace files
 *.code-workspace
-=======
-#my todo list
-what.todo
-
-#my vsc workspace file
-mindweb-demo.code-workspace
->>>>>>> 0eb3f6094cc1988f37fac1096aeb8e5b994cbb1c
