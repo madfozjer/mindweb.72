@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "devDependencies": {
     "express": "^4.19.2",
     "tailwindcss": "^3.4.10"
@@ -7,5 +8,23 @@
     "style": "tailwindcss -i ./public/input.css -o ./dist/style.css --watch",
     "init-server": "start node server.js",
     "dev":"npm run init-server && npm run style "
+=======
+  "name": "mindweb-.73-(demo)",
+  "version": "dev",
+  "main": "index.js",
+  "scripts": {
+    "style": "tailwindcss -i ./public/input.css -o ./dist/style.css --watch",
+    "init-server": "start node index.js",
+    "dev": "npm run init-server && npm run style "
+  },
+  "author": "madfozjer.net",
+  "license": "UNLICENSED",
+  "description": "proof-of-concept demo",
+  "devDependencies": {
+    "tailwindcss": "^3.4.10"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+>>>>>>> 0eb3f6094cc1988f37fac1096aeb8e5b994cbb1c
   }
 }

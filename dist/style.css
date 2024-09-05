@@ -554,6 +554,7 @@ video {
   --tw-contain-style:  ;
 }
 
+<<<<<<< HEAD
 .col-start-2 {
   grid-column-start: 2;
 }
@@ -607,4 +608,9 @@ video {
 .border-yellow-300 {
   --tw-border-opacity: 1;
   border-color: rgb(253 224 71 / var(--tw-border-opacity));
+=======
+.text-red-500 {
+  --tw-text-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-text-opacity));
+>>>>>>> 0eb3f6094cc1988f37fac1096aeb8e5b994cbb1c
 }
