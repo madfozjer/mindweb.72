@@ -1,0 +1,7 @@
+node_modules/
+
+#my todo's
+*.todo
+
+#workspace files
+*.code-workspace
