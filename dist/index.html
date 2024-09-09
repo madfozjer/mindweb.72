@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=deventice-width, initial-scale=1.0">
     <title>mindweb .72 demo</title>
     <link rel="stylesheet" href="style.css"> 
+    <script src="scripts.js"></script>
 </head>
 <style>
     * {
@@ -13,13 +14,18 @@
 </style>
 <body>
     <div id="wrapper" class="grid grid-cols-3 grid-rows-2 w-screen h-screen">
-        <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex justify-center items-center">
-            <div class="grid grid-cols-3 gap-1">
-                <div class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center">AA</div>
-                <div class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center">BB</div>
-                <div class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid">CA+</div>
+        <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex flex-col justify-center items-center">
+            <div>
+                <div class="grid grid-cols-4 gap-1">
+                    <div ondragover="allowDrop(event)" onclick="drop(event)" ondrop="drop(event)" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">AA</div>
+                    <div ondragover="allowDrop(event)" onclick="drop(event)" ondrop="drop(event)"  class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">BB</div>
+                    <div ondragover="allowDrop(event)" onclick="drop(event)" ondrop="drop(event)"  class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">CA+</div>
+                    <div ondragover="allowDrop(event)" onclick="drop(event)" ondrop="drop(event)"  class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">CA+</div>
+                </div>
+                <div id="move-list" class="pl-3">
+                    <div id="AA" draggable="true" onclick="drag(event)" ondragstart="drag(event)" class="font-semibold hover:cursor-pointer hover:font-bold">1. AA [3 dmg]</div>
+                </div>
             </div>
-            <div class="text-white">empty</div>
         </div>
         <div id="baze" class="row-start-1 standard-border border-b-2">
             baze (renovation)
