@@ -8,19 +8,23 @@
 </head>
 <style>
     * {
-        background-color: #292929;
-        color: white;
+        
     }
 </style>
 <body>
     <div id="wrapper" class="grid grid-cols-3 grid-rows-2 w-screen h-screen">
-        <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standart-border border-l-2">
-            dungeon
+        <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex justify-center items-center">
+            <div class="grid grid-cols-3 gap-1">
+                <div class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center">AA</div>
+                <div class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center">BB</div>
+                <div class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid">CA+</div>
+            </div>
+            <div class="text-white">empty</div>
         </div>
-        <div id="baze" class="row-start-1 standart-border border-b-2">
+        <div id="baze" class="row-start-1 standard-border border-b-2">
             baze (renovation)
         </div>
-        <div id="charlist" class="row-start-2 standart-border">
+        <div id="charlist" class="row-start-2 standard-border">
             charlist
         </div>
     </div>  

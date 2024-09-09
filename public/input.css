@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer utilities {
-    .standart-border {
-        @apply border-white;
+    .standard-border {
+        @apply border-gray-800;
     }
 }
