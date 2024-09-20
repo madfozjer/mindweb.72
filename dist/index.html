@@ -12,10 +12,20 @@
         
     }
 </style>
-<body>
+<body class="left-0 right-0">
+    <div id="big-text" onclick="hideMe(event.target)"  class="fixed  z-10 text-3xl bg-yellow-200 dark:bg-red-200 hover:cursor-pointer hidden" style="top: 40%; left: 50%; transform: translate(-50%, -50%);">
+        you suck
+    </div>
     <div id="wrapper" class="grid grid-cols-3 grid-rows-2 w-screen h-screen">
         <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex flex-col justify-center items-center">
             <div>
+                <div id="enemy-hud" class="flex flex-col justify-center h-48 items-center border-gray-500 border-2 border-dotted">
+                    <div id="encounter-pfp" class="text-6xl font-light hover:cursor-help">
+                        #
+                    </div>
+                    <div id="encounter-name" class="italic">sousid</div>
+                </div>
+
                 <div id="infohud" class="flex gap-2">
                     <div id="encounter-healthbar">
                         <span class="text-green-500">enemie's hp:</span> 10
