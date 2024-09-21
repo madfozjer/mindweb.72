@@ -20,8 +20,11 @@
         <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex flex-col justify-center items-center">
             <div>
                 <div id="enemy-hud" class="flex flex-col justify-center h-48 items-center border-gray-500 border-2 border-dotted">
-                    <div id="encounter-pfp" class="text-6xl font-light hover:cursor-help">
+                    <div id="encounter-pfp" class="text-6xl relative font-light hover:cursor-help group">
                         #
+                        <div id="encounter-info" class="text-sm absolute invisible z-10 min-w-32 max-w-52 group-hover:visible border-2 border-gray-400" style="left: 105%; top: -5%;"> <!--fix min/max w-->
+                            scary guy next door aaaaaaaaaaaaaaa
+                        </div>
                     </div>
                     <div id="encounter-name" class="italic">sousid</div>
                 </div>
