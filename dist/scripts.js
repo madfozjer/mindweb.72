@@ -30,6 +30,7 @@ var encounterHUD = {
   image: "",
   name: ""
 }
+var charlistDescription;
 
 /*current state*/
 var encounterList = [sousid, sus, sousid];
@@ -44,6 +45,7 @@ window.onload = function() {
   healthbar = document.getElementById("healthbar");
   encounterHUD.image = document.getElementById("encounter-pfp");
   encounterHUD.name = document.getElementById("encounter-name");
+  charlistDescription = document.getElementById("info");
   currentEncounter = encounterList[encounterID];
   encounterID += 1;
   currentEncounter.hp = currentEncounter.hpmodifier * diffuclty;
@@ -145,4 +147,21 @@ function encounterMove() {
 /*ui manipulation*/
 function hideMe(item) {
   item.classList.toggle("hidden");
+}
+
+function description(id) {
+  switch (id) {
+    case "AA":
+      charlistDescription.innerHTML = "really powerfull move";
+      break;
+      case "CA+":
+        charlistDescription.innerHTML = "less powerfull move";
+        break;
+    case "standart":
+      charlistDescription.innerHTML = "";
+      break;
+    default:
+      charlistDescription.innerHTML = "";  
+  }
+  
 }

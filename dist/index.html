@@ -23,7 +23,7 @@
                     <div id="encounter-pfp" class="text-6xl relative font-light hover:cursor-help group">
                         #
                         <div id="encounter-info" class="text-sm absolute invisible z-10 min-w-32 w-auto max-w-52 group-hover:visible border-2 border-gray-400" style="left: 105%; top: -5%;"> <!--fix width-->
-                            scary guy next door aaaaaaaaa
+                            spider-like guy next door
                         </div>
                     </div>
                     <div id="encounter-name" class="italic">sousid</div>
@@ -45,8 +45,8 @@
                     <button onclick="sendMoves()">send</button>
                 </div>
                 <div id="move-list" class="pl-3">
-                    <div id="AA" draggable="true" ondragstart="drag(event)" class="font-semibold hover:cursor-pointer hover:font-bold">1. AA [3 dmg]</div>
-                    <div id="CA+" draggable="true" ondragstart="drag(event)" class="font-semibold hover:cursor-pointer hover:font-bold">2. CA+ [2 dmg]</div>
+                    <div id="AA" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" class="font-semibold hover:cursor-pointer hover:font-bold">1. AA [3 dmg]</div>
+                    <div id="CA+" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" class="font-semibold hover:cursor-pointer hover:font-bold">2. CA+ [2 dmg]</div>
                 </div>
             </div>
         </div>
