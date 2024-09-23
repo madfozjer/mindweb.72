@@ -31,13 +31,14 @@ var encounterHUD = {
   name: ""
 }
 var charlistDescription;
+var charlistItems = [];
 
 /*current state*/
 var encounterList = [sousid, sus, sousid];
 var diffuclty = 10;
 var encounterID = 0;
 var currentEncounter;
-var moves = [];
+var moves = ["", "AA", "CA+", "CA+"];
 
 /*onload*/
 window.onload = function() {
@@ -51,6 +52,14 @@ window.onload = function() {
   currentEncounter.hp = currentEncounter.hpmodifier * diffuclty;
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
+  
+  for (i = 1; i < 5; i++) {
+    charlistItems[i] = document.getElementById("item-" + i);
+    console.log(charlistItems[i]);
+
+    if (moves[i] != undefined)
+      charlistItems[i].innerHTML = moves[i];
+  }
 };
 
 /*game master*/
@@ -151,17 +160,36 @@ function hideMe(item) {
 
 function description(id) {
   switch (id) {
-    case "AA":
-      charlistDescription.innerHTML = "really powerfull move";
-      break;
+      case "AA":
+        charlistDescription.innerHTML = "really powerfull move";
+        selectAnimation("AA", "mouseEnter");
+        break;
       case "CA+":
         charlistDescription.innerHTML = "less powerfull move";
+        selectAnimation("CA+", "mouseEnter");
         break;
     case "standart":
+      selectAnimation("", "mouseLeave");
       charlistDescription.innerHTML = "";
       break;
     default:
       charlistDescription.innerHTML = "";  
   }
-  
+}
+
+function selectAnimation(item, action) {  /*optimize + animation*/
+  if (moves.includes(item) && action == "mouseEnter") {
+    for (i = 0; i < moves.length; i++) {
+      var index = moves.indexOf(item, i);
+      if (charlistItems[index] != undefined)
+        charlistItems[index].style.fontWeight = 400;
+    }
+  }
+
+  if (action == "mouseLeave") {
+    for (i = 1; i < moves.length; i++) {
+      if (charlistItems[i] != undefined)
+        charlistItems[i].style.fontWeight = 100;
+    }
+  }
 }
