@@ -38,10 +38,10 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-5 gap-1">
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)" id="move-1" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)"  id="move-2" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)"  id="move-3" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)"  id="move-4" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)" id="move-1" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">6</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)"  id="move-2" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">3</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)"  id="move-3" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">4</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)"  id="move-4" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">5</div>
                     <button onclick="sendMoves()">send</button>
                 </div>
                 <div id="move-list" class="pl-3">
@@ -55,10 +55,10 @@
         </div>
         <div id="charlist" class="flex flex-col justify-end col-start-1 row-span-1 col-span-1 mb-4 gap-12 standard-border">
             <div id="items" class="flex text-5xl font-thin gap-4 ml-8">
-                <div id="item-1" class="inline-block">AA</div>
-                <div id="item-2" class="inline-block">CA+</div>
-                <div id="item-3" class="inline-block"></div>
-                <div id="item-4" class="inline-block"></div>
+                <div id="item-1" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
+                <div id="item-2" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
+                <div id="item-3" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
+                <div id="item-4" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
             </div>
             <div id="info" class="inline-block border-2 border-gray-500 h-48 mr-8 ml-7 pl-2 pt-4">
                 there will be a lot of text

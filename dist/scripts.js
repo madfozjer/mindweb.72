@@ -38,7 +38,8 @@ var encounterList = [sousid, sus, sousid];
 var diffuclty = 10;
 var encounterID = 0;
 var currentEncounter;
-var moves = ["", "AA", "CA+", "CA+"];
+var moves = [];
+var moveList = ["", "AA", "CA+", "CA+"]
 
 /*onload*/
 window.onload = function() {
@@ -53,14 +54,14 @@ window.onload = function() {
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
   
-  for (i = 1; i < 5; i++) {
+  for (i = 1; i < moveList.length; i++) {
     charlistItems[i] = document.getElementById("item-" + i);
-    console.log(charlistItems[i]);
 
-    if (moves[i] != undefined)
-      charlistItems[i].innerHTML = moves[i];
+    if (moveList[i] != undefined)
+      charlistItems[i].innerHTML = moveList[i];
+      charlistItems[i].setAttribute('title', moveList[i]);
   }
-};
+}
 
 /*game master*/
 function nextEncounter() {
@@ -72,7 +73,6 @@ function nextEncounter() {
    console.log(encounterHUD.image);
     encounterHUD.image.innerHTML = currentEncounter.image;
     encounterHUD.name.innerHTML = currentEncounter.name;
-    console.log("new encounter = " + currentEncounter.name);
   }
   else { win(); }
 }
@@ -98,6 +98,7 @@ function allowDrop(ev) {
   }
   
   function drag(ev) {
+    ev.dataTransfer.clearData();
     ev.dataTransfer.setData("text", ev.target.id);
   }
   
@@ -178,16 +179,16 @@ function description(id) {
 }
 
 function selectAnimation(item, action) {  /*optimize + animation*/
-  if (moves.includes(item) && action == "mouseEnter") {
-    for (i = 0; i < moves.length; i++) {
-      var index = moves.indexOf(item, i);
+  if (moveList.includes(item) && action == "mouseEnter") {
+    for (i = 0; i < moveList.length; i++) {
+      var index = moveList.indexOf(item, i);
       if (charlistItems[index] != undefined)
         charlistItems[index].style.fontWeight = 400;
     }
   }
 
   if (action == "mouseLeave") {
-    for (i = 1; i < moves.length; i++) {
+    for (i = 1; i < moveList.length; i++) {
       if (charlistItems[i] != undefined)
         charlistItems[i].style.fontWeight = 100;
     }
