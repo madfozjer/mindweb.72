@@ -32,6 +32,7 @@ var encounterHUD = {
 }
 var charlistDescription;
 var charlistItems = [];
+var moveSlots = [];
 
 /*current state*/
 var encounterList = [sousid, sus, sousid];
@@ -39,6 +40,7 @@ var diffuclty = 10;
 var encounterID = 0;
 var currentEncounter;
 var moves = [];
+var diceValues = [];
 var moveList = ["", "AA", "CA+", "CA+"]
 
 /*onload*/
@@ -61,6 +63,13 @@ window.onload = function() {
       charlistItems[i].innerHTML = moveList[i];
       charlistItems[i].setAttribute('title', moveList[i]);
   }
+
+  moveSlots.length = 4;
+  for (i = 1; i <= 4; i++) {
+    moveSlots[i] = document.getElementById("move-" + i);
+  }
+
+  diceValues.length = 5; diceRoller(); 
 }
 
 /*game master*/
@@ -97,29 +106,79 @@ function allowDrop(ev) {
     ev.preventDefault();
   }
   
-  function drag(ev) {
-    ev.dataTransfer.clearData();
-    ev.dataTransfer.setData("text", ev.target.id);
+function drag(ev) {
+  ev.dataTransfer.clearData();
+  ev.dataTransfer.setData("text", ev.target.id);
+}
+  
+function drop(ev) {
+  ev.preventDefault();
+  var id = ev.target.id.toString().substring(5);
+  var data = ev.dataTransfer.getData("text");
+  //ev.target.innerHTML = data;
+  moves[id - 1] = data;
+  setSlotColor(data, ev.target);
+}
+
+function setSlotColor(move, slot) {
+  var index = moves.indexOf(move) + 1;
+  switch(index) {
+    case 1:
+      console.log("case 1");
+      slot.style.color = "purple";
+      break;
+    case 2:
+      slot.style.color = "blue";
+      break;
+  }
+}
+
+function sendMoves() {
+  for (var i = 0; i < moves.length; i++)
+  {
+    console.log(moves[i]);
+    moveReceiver(moves[i], currentEncounter);
+  }
+
+  encounterMove(); //TODO await/async implementation
+  turnEnd();
+  diceRoller();
+}
+
+function diceRoller() {
+  for (i = 1; i < diceValues.length; i++) {
+    diceValues[i] = diceRoll();
+    moveSlots[i].innerHTML = diceValues[i];
+  }
+}
+
+function diceRoll() {  // 21 = 6; 19,20 = 5; 16,17,18 = 4; 12,13,14,15 = 3; 7,8,9,10,11 = 2; 1,2,3,4,5,6 = 1
+  var seed = random(1, 21);
+
+  if (seed < 7) {
+    return 1;
   }
   
-  function drop(ev) {
-    ev.preventDefault();
-    var id = ev.target.id.toString().substring(5);
-    var data = ev.dataTransfer.getData("text");
-    ev.target.innerHTML = data;
-    moves[id - 1] = ev.target.innerHTML;
+  if (seed > 6 && seed < 12) {
+    return 2;
   }
 
-  function sendMoves() {
-    for (var i = 0; i < moves.length; i++)
-    {
-      console.log(moves[i]);
-      moveReceiver(moves[i], currentEncounter);
-    }
-
-    encounterMove(); //TODO await/async implementation
-    turnEnd();
+  if (seed > 11 && seed < 16) {
+    return 3;
   }
+
+  if (seed > 15 && seed < 19) {
+    return 4;
+  }
+
+  if (seed > 18 && seed < 21) {
+    return 5;
+  }
+
+  if (seed == 21) {
+    return 6;
+  }
+}
 
 /*encounter side*/
 function moveReceiver(move, receiver) {
@@ -193,4 +252,9 @@ function selectAnimation(item, action) {  /*optimize + animation*/
         charlistItems[i].style.fontWeight = 100;
     }
   }
+}
+
+/*misc*/
+function random(min, max) {
+  return Math.floor(Math.random() * (max - min) ) + min;
 }
