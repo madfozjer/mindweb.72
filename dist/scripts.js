@@ -31,20 +31,25 @@ var encounterHUD = {
   name: ""
 }
 var charlistDescription;
-var charlistItems = [];
+var charlistItems = []; //moves ui
+var charlistGuns = [];
 var moveSlots = [];
 
 /*current state*/
-var encounterList = [sousid, sus, sousid];
 var diffuclty = 10;
 var encounterID = 0;
 var currentEncounter;
 var moves = [];
 var diceValues = [];
-var moveList = ["", "AA", "CA+", "CA+"]
 
-/*onload*/
-window.onload = function() {
+/*lists*/
+var moveList = ["", "AA", "CA+"]
+var gunList= ["", "CAR", "AAR"]
+var encounterList = [sousid, sus, sousid];
+var genesList = ["energetic"];
+
+/*onload*/ //TODO cash current state
+window.onload = function() {  
   encounterHPbar = document.getElementById("encounter-healthbar");
   healthbar = document.getElementById("healthbar");
   encounterHUD.image = document.getElementById("encounter-pfp");
@@ -62,6 +67,14 @@ window.onload = function() {
     if (moveList[i] != undefined)
       charlistItems[i].innerHTML = moveList[i];
       charlistItems[i].setAttribute('title', moveList[i]);
+  }
+
+  for (i = 1; i < gunList.length; i++) {
+    charlistGuns[i] = document.getElementById("gun-" + i);
+
+    if (charlistItems[i] != undefined)
+      charlistGuns[i].innerHTML = gunList[i];
+    charlistGuns[i].setAttribute('title', gunList[i]);
   }
 
   moveSlots.length = 4;
@@ -134,6 +147,10 @@ function setSlotColor(move, slot) {
 }
 
 function sendMoves() {
+  for (i = 0; i < genesList.length; i++) {
+    genetics(genesList[i]);
+  }
+
   for (var i = 0; i < moves.length; i++)
   {
     console.log(moves[i]);
@@ -218,7 +235,7 @@ function hideMe(item) {
   item.classList.toggle("hidden");
 }
 
-function description(id) {
+function description(id) { //automatic descriptions
   switch (id) {
       case "AA":
         charlistDescription.innerHTML = "really powerfull move";
@@ -227,6 +244,19 @@ function description(id) {
       case "CA+":
         charlistDescription.innerHTML = "less powerfull move";
         selectAnimation("CA+", "mouseEnter");
+        break;
+      case "CAR":
+        charlistDescription.innerHTML = "lightsaber like knife";
+        selectAnimation("CAR", "mouseEnter");
+        selectAnimation("CA+", "mouseEnter");
+        break;
+      case "AAR":
+        charlistDescription.innerHTML = "short gun for xptional marksmans, u know";
+        selectAnimation("AAR", "mouseEnter");
+        selectAnimation("AA", "mouseEnter");
+        break;
+      case "energetic":
+        charlistDescription.innerHTML = "a lot of energy in this legs and mind. and above legs also.";
         break;
     case "standart":
       selectAnimation("", "mouseLeave");
@@ -237,7 +267,7 @@ function description(id) {
   }
 }
 
-function selectAnimation(item, action) {  /*optimize + animation*/
+function selectAnimation(item, action) {  //optimize + more select animations
   if (moveList.includes(item) && action == "mouseEnter") {
     for (i = 0; i < moveList.length; i++) {
       var index = moveList.indexOf(item, i);
@@ -246,11 +276,33 @@ function selectAnimation(item, action) {  /*optimize + animation*/
     }
   }
 
-  if (action == "mouseLeave") {
+  if (moveList.includes(item) && action == "mouseLeave") {
     for (i = 1; i < moveList.length; i++) {
       if (charlistItems[i] != undefined)
         charlistItems[i].style.fontWeight = 100;
     }
+  }
+
+  if (gunList.includes(item) && action == "mouseEnter") {
+    for (i = 0; i < gunList.length; i++) {
+      var index = gunList.indexOf(item, i);
+      if (charlistGuns[index] != undefined)
+        charlistGuns[index].style.fontWeight = 400;
+    }
+  }
+
+  if (gunList.includes(item) && action == "mouseLeave") {
+    for (i = 1; i < gunList.length; i++) {
+      if (charlistGuns[i] != undefined)
+        charlistGuns[i].style.fontWeight = 100;
+    }
+  }
+}
+
+/*genes*/
+function genetics(gene) {
+  switch(gene) {
+    case "energetic":
   }
 }
 
