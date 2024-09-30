@@ -34,6 +34,7 @@ var charlistDescription;
 var charlistItems = []; //moves ui
 var charlistGuns = [];
 var moveSlots = [];
+var bazeInfobox;
 
 /*current state*/
 var diffuclty = 10;
@@ -55,6 +56,7 @@ window.onload = function() {
   encounterHUD.image = document.getElementById("encounter-pfp");
   encounterHUD.name = document.getElementById("encounter-name");
   charlistDescription = document.getElementById("info");
+  bazeInfobox = document.getElementById("baze-infobox");
   currentEncounter = encounterList[encounterID];
   encounterID += 1;
   currentEncounter.hp = currentEncounter.hpmodifier * diffuclty;
@@ -317,6 +319,10 @@ function selectAnimation(item, action) {  //optimize + more select animations
         charlistGuns[i].style.fontWeight = 100;
     }
   }
+}
+
+function bazeInfo() {
+  bazeInfobox.classList.toggle("hidden");
 }
 
 /*genes*/
