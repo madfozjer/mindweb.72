@@ -130,31 +130,33 @@ function drop(ev) {
   var data = ev.dataTransfer.getData("text");
   //ev.target.innerHTML = data;
   moves[id - 1] = data;
+  console.log(data);
   setSlotColor(data, ev.target);
 }
 
 function setSlotColor(move, slot) {
-  var index = moves.indexOf(move) + 1;
+  var index = moveList.indexOf(move);
   switch(index) {
     case 1:
       console.log("case 1");
       slot.style.color = "purple";
       break;
     case 2:
+      console.log("case 2");
       slot.style.color = "blue";
       break;
   }
 }
 
 function sendMoves() {
-  for (i = 0; i < genesList.length; i++) {
-    genetics(genesList[i]);
-  }
-
   for (var i = 0; i < moves.length; i++)
   {
     console.log(moves[i]);
-    moveReceiver(moves[i], currentEncounter);
+    moveReceiver(moves[i], currentEncounter, i);
+  }
+
+  for (i = 0; i < genesList.length; i++) {
+    genetics(genesList[i], "post");
   }
 
   encounterMove(); //TODO await/async implementation
@@ -166,6 +168,10 @@ function diceRoller() {
   for (i = 1; i < diceValues.length; i++) {
     diceValues[i] = diceRoll();
     moveSlots[i].innerHTML = diceValues[i];
+  }
+
+  for (i = 0; i < genesList.length; i++) {
+    genetics(genesList[i], "pre");
   }
 }
 
@@ -198,17 +204,31 @@ function diceRoll() {  // 21 = 6; 19,20 = 5; 16,17,18 = 4; 12,13,14,15 = 3; 7,8,
 }
 
 /*encounter side*/
-function moveReceiver(move, receiver) {
-  switch (move) {
-    case "AA":
-      receiver.hp -= 3;
-      break;
-    case "CA+":
-      receiver.hp -= 2;
-      break;
-    default:
-      console.log("move receiver error");
-  } 
+function moveReceiver(move, receiver, index) { //automatic moves code
+  if (receiver == currentEncounter) {
+    switch (move) {
+      case "AA":
+        receiver.hp -= diceValues[index + 1];
+        break;
+      case "CA+":
+        receiver.hp -= 2;
+        break;
+      default:
+        console.log("move receiver error");
+    } 
+  }
+  else if (receiver == player) {
+    switch (move) {
+      case "AA":
+        receiver.hp -= 4;
+        break;
+      case "CA+":
+        receiver.hp -= 6;
+        break;
+      default:
+        console.log("move receiver error");
+    } 
+  }
 }
 
 function turnEnd() {
@@ -300,9 +320,19 @@ function selectAnimation(item, action) {  //optimize + more select animations
 }
 
 /*genes*/
-function genetics(gene) {
-  switch(gene) {
-    case "energetic":
+function genetics(gene, stage) { //automatic genes
+  if (stage == "pre") {
+    switch(gene) {
+      case "energetic":
+        console.log("energetic");
+        diceValues[1] += 1;
+        moveSlots[1].innerHTML = diceValues[1];
+        moveSlots[1].style.color = "red";
+    }
+  }
+  else if (stage == "post") {
+    switch(gene) {
+    }
   }
 }
 
