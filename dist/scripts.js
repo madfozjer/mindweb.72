@@ -35,6 +35,7 @@ var charlistItems = []; //moves ui
 var charlistGuns = [];
 var moveSlots = [];
 var bazeInfobox;
+var buildingItems = [];
 
 /*current state*/
 var diffuclty = 10;
@@ -48,6 +49,7 @@ var moveList = ["", "AA", "CA+"]
 var gunList= ["", "CAR", "AAR"]
 var encounterList = [sousid, sus, sousid];
 var genesList = ["energetic"];
+var buildingList = ["", "spaceship"];
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
@@ -58,6 +60,8 @@ window.onload = function() {
   charlistDescription = document.getElementById("info");
   bazeInfobox = document.getElementById("baze-infobox");
   currentEncounter = encounterList[encounterID];
+  buildingItems.length = 10;
+  buildingList.length = 10;
   encounterID += 1;
   currentEncounter.hp = currentEncounter.hpmodifier * diffuclty;
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
@@ -78,6 +82,14 @@ window.onload = function() {
       charlistGuns[i].innerHTML = gunList[i];
     charlistGuns[i].setAttribute('title', gunList[i]);
   }
+
+  for (i = 1; i < buildingList.length; i++) {
+    buildingItems[i] = document.getElementById("building-" + i);
+    if (buildingList[i] != undefined) {
+      buildingItems[i].innerHTML = buildingList[i];
+      buildingItems[i].setAttribute('title', buildingItems[i]);
+    } else { buildingItems[i].innerHTML = ""; }
+    }
 
   moveSlots.length = 4;
   for (i = 1; i <= 4; i++) {
@@ -321,8 +333,13 @@ function selectAnimation(item, action) {  //optimize + more select animations
   }
 }
 
-function bazeInfo() {
+function bazeInfo() { //optimize
   bazeInfobox.classList.toggle("hidden");
+
+  for (i = 1; i < buildingItems.length; i++) {
+    console.log(i);
+    buildingItems[i].classList.toggle("hidden");
+  }
 }
 
 /*genes*/
@@ -330,7 +347,6 @@ function genetics(gene, stage) { //automatic genes
   if (stage == "pre") {
     switch(gene) {
       case "energetic":
-        console.log("energetic");
         diceValues[1] += 1;
         moveSlots[1].innerHTML = diceValues[1];
         moveSlots[1].style.color = "red";
