@@ -8,13 +8,17 @@
     <script src="scripts.js"></script>
 </head>
 <style>
-    * {
-        
+     {
+        border: 2px red solid;
     }
 </style>
 <body class="left-0 right-0 overflow-hidden">
     <div id="big-text" onclick="hideMe(event.target)"  class="fixed  z-10 text-3xl bg-yellow-200 dark:bg-red-200 hover:cursor-pointer hidden" style="top: 40%; left: 50%; transform: translate(-50%, -50%);">
         you suck
+    </div>
+    <div id="biginfobox" class="w-96 h-96 fixed border-2 standard-border border-dashed bg-white hidden" style="left: 50%; top: 50%; margin-top: -200px; margin-left: -150px; ">
+        <button onclick="toggleBigInfo()" class="block h-8 text-red-500 pl-2">x</button>
+        <div class="pl-6">YEAH</div>
     </div>
     <div id="wrapper" class="grid grid-cols-3 grid-rows-2 w-screen h-screen">
         <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex flex-col justify-center items-center">
@@ -66,7 +70,16 @@
             <div id="building-7" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
             <div id="building-8" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
             <div id="building-9" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="baze-infobox" class="flex justify-center hidden">text</div>
+            <div id="baze-infobox" class="flex hidden row-span-3 col-span-3 border-2 justify-center border-dotted standard-border">
+                <button onclick="bazeInfo()" class="block h-8 text-red-500 pl-2 mr-auto">x</button>
+                <div class="w-ful block self-center mr-auto">
+                    <h3 class="">Human Resources</h3>
+                    <div class="text-sm italic" id="blocker">blocked</div>
+                </div>
+            </div>
+            <div id="resources" class="text-xl">
+                <div>@3</div>
+            </div>
         </div>
         <div id="charlist" class="flex flex-col col-start-1 justify-end row-span-1 col-span-1 mb-6 gap-6 standard-border">
             <div id="genes" class="grid grid-cols-6 ml-8 mr-8 text-4xl gap-6">

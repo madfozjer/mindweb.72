@@ -36,6 +36,7 @@ var charlistGuns = [];
 var moveSlots = [];
 var bazeInfobox;
 var buildingItems = [];
+var bigInfo;
 
 /*current state*/
 var diffuclty = 10;
@@ -43,13 +44,17 @@ var encounterID = 0;
 var currentEncounter;
 var moves = [];
 var diceValues = [];
+var inDungeon = true;
 
 /*lists*/
 var moveList = ["", "AA", "CA+"]
 var gunList= ["", "CAR", "AAR"]
 var encounterList = [sousid, sus, sousid];
 var genesList = ["energetic"];
-var buildingList = ["", "spaceship"];
+var buildingList = ["", "HR"];
+var resources = {
+  "@": 3
+}
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
@@ -59,6 +64,7 @@ window.onload = function() {
   encounterHUD.name = document.getElementById("encounter-name");
   charlistDescription = document.getElementById("info");
   bazeInfobox = document.getElementById("baze-infobox");
+  bigInfo = document.getElementById("biginfobox");
   currentEncounter = encounterList[encounterID];
   buildingItems.length = 10;
   buildingList.length = 10;
@@ -340,6 +346,14 @@ function bazeInfo() { //optimize
     console.log(i);
     buildingItems[i].classList.toggle("hidden");
   }
+
+  if (!inDungeon) {
+    document.getElementById("blocker").classList.toggle("hidden");
+  }
+}
+
+function toggleBigInfo() {
+  bigInfo.classList.toggle("hidden");
 }
 
 /*genes*/
