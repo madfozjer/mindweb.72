@@ -23,6 +23,22 @@ var sus =
   hp: 0
 }
 
+var alex =
+{
+  name: "alex",
+  moveList: ["", "AA","CA+", ""],
+  gunList: ["", "CAR", "AAR"],
+  genes: "energetic"
+}
+
+var carlos = 
+{
+  name: "carlos",
+  moveList: ["", "AA", ""],
+  gunList: ["", "CAR", ""],
+  genes: ""
+}
+
 /*ui*/
 var encounterHPbar;
 var healthbar;
@@ -31,8 +47,8 @@ var encounterHUD = {
   name: ""
 }
 var charlistDescription;
-var charlistItems = []; //moves ui
-var charlistGuns = [];
+var charlistItems = []; charlistItems.length = 4;
+var charlistGuns = []; charlistGuns.length = 3;
 var moveSlots = [];
 var bazeInfobox;
 var buildingItems = [];
@@ -44,17 +60,20 @@ var encounterID = 0;
 var currentEncounter;
 var moves = [];
 var diceValues = [];
-var inDungeon = true;
+var inDungeon = false;
+var char = "alex";
 
 /*lists*/
-var moveList = ["", "AA", "CA+"]
+var moveList = [""]
 var gunList= ["", "CAR", "AAR"]
 var encounterList = [sousid, sus, sousid];
 var genesList = ["energetic"];
 var buildingList = ["", "HR"];
+var charList = [alex,carlos];
 var resources = {
   "@": 3
 }
+var characters = [""];
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
@@ -73,20 +92,12 @@ window.onload = function() {
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
   
-  for (i = 1; i < moveList.length; i++) {
+  for (i = 1; i < charlistItems.length; i++) {
     charlistItems[i] = document.getElementById("item-" + i);
-
-    if (moveList[i] != undefined)
-      charlistItems[i].innerHTML = moveList[i];
-      charlistItems[i].setAttribute('title', moveList[i]);
   }
 
-  for (i = 1; i < gunList.length; i++) {
+  for (i = 1; i < charlistGuns.length; i++) {
     charlistGuns[i] = document.getElementById("gun-" + i);
-
-    if (charlistItems[i] != undefined)
-      charlistGuns[i].innerHTML = gunList[i];
-    charlistGuns[i].setAttribute('title', gunList[i]);
   }
 
   for (i = 1; i < buildingList.length; i++) {
@@ -223,6 +234,35 @@ function diceRoll() {  // 21 = 6; 19,20 = 5; 16,17,18 = 4; 12,13,14,15 = 3; 7,8,
   }
 }
 
+function characterChoose(title) {
+  if (!inDungeon) {
+    for (i = 0; i < charList.length; i++) {
+      if (title == charList[i].name) {
+        char = charList[i];
+      }
+    }
+
+    if (char != undefined) {
+      moveList = char.moveList;
+      gunList = char.gunList;
+
+      for (i = 1; i < moveList.length; i++) { 
+        if (moveList[i] != undefined || moveList[i] != "") {
+          charlistItems[i].innerHTML = moveList[i];
+          charlistItems[i].setAttribute('title', moveList[i]);
+      }
+    }
+
+      for (i = 1; i < gunList.length; i++) {
+        if (moveList[i] != undefined || moveList[i] != "") {
+          charlistGuns[i].innerHTML = gunList[i];
+          charlistGuns[i].setAttribute('title', gunList[i]);
+        }
+      }
+    }
+    }
+}
+
 /*encounter side*/
 function moveReceiver(move, receiver, index) { //automatic moves code
   if (receiver == currentEncounter) {
@@ -271,6 +311,14 @@ function encounterMove() {
 }
 
 /*ui manipulation*/
+function goDungeon(button) {
+  var dungen = document.getElementById("dungeon-wrapper");
+  button.classList.toggle("hidden")
+  inDungeon = true;
+  document.getElementById("blocker").classList.toggle("hidden");
+  dungen.classList.toggle("hidden");
+}
+
 function hideMe(item) {
   item.classList.toggle("hidden");
 }
@@ -343,7 +391,6 @@ function bazeInfo() { //optimize
   bazeInfobox.classList.toggle("hidden");
 
   for (i = 1; i < buildingItems.length; i++) {
-    console.log(i);
     buildingItems[i].classList.toggle("hidden");
   }
 
