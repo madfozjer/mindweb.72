@@ -16,8 +16,7 @@
     <div id="big-text" onclick="hideMe(event.target)"  class="fixed  z-10 text-3xl bg-yellow-200 dark:bg-red-200 hover:cursor-pointer hidden" style="top: 40%; left: 50%; transform: translate(-50%, -50%);">
         you suck
     </div>
-    <div id="biginfobox" class="w-96 h-96 fixed border-2 standard-border border-dashed bg-white hidden" style="left: 50%; top: 50%; margin-top: -200px; margin-left: -150px; ">
-        <button onclick="toggleBigInfo()" class="block h-8 text-red-500 pl-2">x</button>
+    <div id="biginfobox" onclick="hideMe(event.target)" class="w-96 h-96 fixed border-2 standard-border border-dashed bg-white hidden hover:cursor-pointer" style="left: 50%; top: 50%; margin-top: -200px; margin-left: -150px; ">
         <div class="pl-6">YEAH</div>
     </div>
     <div id="wrapper" class="grid grid-cols-3 grid-rows-2 w-screen h-screen">
@@ -88,7 +87,7 @@
         </div>
         <div id="charlist" class="flex flex-col col-start-1 justify-end row-span-1 col-span-1 mb-6 gap-6 standard-border">
             <div id="genes" class="grid grid-cols-6 ml-8 mr-8 text-4xl gap-6">
-                <div id="gen-1" title="energetic" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer">⚡</div>
+                <div id="gen-1" title="energetic" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
                 <div id="gen-2"></div>
                 <div id="gen-3"></div>
                 <div id="gen-4"></div>

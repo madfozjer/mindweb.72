@@ -28,7 +28,7 @@ var alex =
   name: "alex",
   moveList: ["", "AA","CA+", ""],
   gunList: ["", "CAR", "AAR"],
-  genes: "energetic"
+  genes: ["", "energetic"]
 }
 
 var carlos = 
@@ -36,7 +36,7 @@ var carlos =
   name: "carlos",
   moveList: ["", "AA", ""],
   gunList: ["", "CAR", ""],
-  genes: ""
+  genes: ["", "empty"]
 }
 
 /*ui*/
@@ -49,6 +49,7 @@ var encounterHUD = {
 var charlistDescription;
 var charlistItems = []; charlistItems.length = 4;
 var charlistGuns = []; charlistGuns.length = 3;
+var charlistGenes = []; charlistGenes.length = 12; //automatic?
 var moveSlots = [];
 var bazeInfobox;
 var buildingItems = [];
@@ -61,13 +62,13 @@ var currentEncounter;
 var moves = [];
 var diceValues = [];
 var inDungeon = false;
-var char = "alex";
+var char = "";
 
 /*lists*/
 var moveList = [""]
 var gunList= ["", "CAR", "AAR"]
 var encounterList = [sousid, sus, sousid];
-var genesList = ["energetic"];
+var genesList = [];
 var buildingList = ["", "HR"];
 var charList = [alex,carlos];
 var resources = {
@@ -98,6 +99,10 @@ window.onload = function() {
 
   for (i = 1; i < charlistGuns.length; i++) {
     charlistGuns[i] = document.getElementById("gun-" + i);
+  }
+
+  for (i = 1; i < charlistGenes.length; i++) {
+    charlistGenes[i] = document.getElementById("gen-" + i);
   }
 
   for (i = 1; i < buildingList.length; i++) {
@@ -245,6 +250,7 @@ function characterChoose(title) {
     if (char != undefined) {
       moveList = char.moveList;
       gunList = char.gunList;
+      genes = char.genes;
 
       for (i = 1; i < moveList.length; i++) { 
         if (moveList[i] != undefined || moveList[i] != "") {
@@ -257,6 +263,18 @@ function characterChoose(title) {
         if (moveList[i] != undefined || moveList[i] != "") {
           charlistGuns[i].innerHTML = gunList[i];
           charlistGuns[i].setAttribute('title', gunList[i]);
+        }
+      }
+
+      for (i = 1; i < genes.length; i++) {
+        if (genes[i] != undefined && genes[i] != "empty") {
+          console.log(genes[i]);
+          charlistGenes[i].innerHTML = geneIcons(genes[i]);
+          charlistGenes[i].setAttribute('title', genes[i]);
+        }
+        else if (genes[i] == "empty") {
+          console.log("empty");
+          charlistGenes[i].innerHTML = "";
         }
       }
     }
@@ -312,11 +330,17 @@ function encounterMove() {
 
 /*ui manipulation*/
 function goDungeon(button) {
-  var dungen = document.getElementById("dungeon-wrapper");
-  button.classList.toggle("hidden")
-  inDungeon = true;
-  document.getElementById("blocker").classList.toggle("hidden");
-  dungen.classList.toggle("hidden");
+  if (char != "") {
+    var dungen = document.getElementById("dungeon-wrapper");
+    button.classList.toggle("hidden")
+    inDungeon = true;
+    document.getElementById("blocker").classList.toggle("hidden");
+    dungen.classList.toggle("hidden");
+  }
+  else {
+    bigInfo.innerHTML = "choose character!";
+    bigInfo.classList.toggle("hidden");
+  }
 }
 
 function hideMe(item) {
@@ -416,6 +440,13 @@ function genetics(gene, stage) { //automatic genes
   else if (stage == "post") {
     switch(gene) {
     }
+  }
+}
+
+function geneIcons(gene) {
+  switch(gene) {
+    case "energetic":
+      return "⚡";
   }
 }
 
