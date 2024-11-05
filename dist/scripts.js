@@ -23,12 +23,14 @@ var sus =
   hp: 0
 }
 
-var alex =
+//generate characters 
+var alex = 
 {
   name: "alex",
   moveList: ["", "AA","CA+", ""],
   gunList: ["", "CAR", "AAR"],
-  genes: ["", "energetic"]
+  genes: ["", "energetic"],
+  resources: { biohazard: 0, deadbones: 3}
 }
 
 var carlos = 
@@ -36,7 +38,8 @@ var carlos =
   name: "carlos",
   moveList: ["", "AA", ""],
   gunList: ["", "CAR", ""],
-  genes: ["", "empty"]
+  genes: ["", "empty"],
+  resources: { biohazard: 3, deadbones: 1}
 }
 
 /*ui*/
@@ -51,9 +54,11 @@ var charlistItems = []; charlistItems.length = 4;
 var charlistGuns = []; charlistGuns.length = 3;
 var charlistGenes = []; charlistGenes.length = 12; //automatic?
 var moveSlots = [];
-var bazeInfobox;
+var buildingHR;
+var buildingREQ;
 var buildingItems = [];
 var bigInfo;
+var rollREQbutton;
 
 /*current state*/
 var diffuclty = 10;
@@ -63,18 +68,74 @@ var moves = [];
 var diceValues = [];
 var inDungeon = false;
 var char = "";
+let rolledChar = {};
+var isSavingREQ = false;
 
 /*lists*/
 var moveList = [""]
 var gunList= ["", "CAR", "AAR"]
 var encounterList = [sousid, sus, sousid];
 var genesList = [];
-var buildingList = ["", "HR"];
-var charList = [alex,carlos];
+var buildingList = ["", "HR", "REQ"];
+var charList = [alex, carlos];
+var possibleChars = {
+  biohazard: [alex],
+  deadbones: [carlos]
+}
 var resources = {
-  "@": 3
+  coins: 3
+};
+var rollResources = {
+  biohazard: 40,
+  deadbones: 30
+}
+var rollResourcesUI = {
+  biohazard: {},
+  deadbones: {}
+}
+var resourcesUI = {
+  coins: {}
 }
 var characters = [""];
+const possibleGuns = {
+  CAR: ["AA"],
+  AAR: ["CA+", "CA"]
+}
+
+/*char generator*/
+const  characterGenerator = {
+  returnRandomName() {
+    let nameList = ["aliona", "sasha", "sanìa", "nastia", "dimon", "kirucha", "yasya", "andruha", "tioma", "dasha", "hanya", "inga", "olia"]
+    return nameList[random(0, nameList.length)];
+  },
+
+  returnGun(type) { 
+    if (type == "biohazard") {
+      let list = ["CAR"];
+      return list[random(0, list.length)];
+    }
+    else if (type = "deadbones") {
+      let list = ["AAR"];
+      return list[random(0, list.length)];
+    }
+  },
+
+  returnAttack(gun) {
+    let returnval;
+
+    Object.keys(possibleGuns).forEach(key => {
+      if (key == gun) {
+        key = key.toString();
+        let gun = possibleGuns[key];
+        let ran1 = random(0, gun.length); let ran2 = random(0, gun.length);
+        returnval = [gun[ran1], gun[ran2]];
+      }
+    })
+
+    return returnval;
+  }
+}
+
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
@@ -83,15 +144,21 @@ window.onload = function() {
   encounterHUD.image = document.getElementById("encounter-pfp");
   encounterHUD.name = document.getElementById("encounter-name");
   charlistDescription = document.getElementById("info");
-  bazeInfobox = document.getElementById("baze-infobox");
+  buildingHR = document.getElementById("HR-building");
+  buildingREQ = document.getElementById("REQ-building");
   bigInfo = document.getElementById("biginfobox");
   currentEncounter = encounterList[encounterID];
+  rollREQbutton =  document.getElementById("roll-REQ");
   buildingItems.length = 10;
   buildingList.length = 10;
   encounterID += 1;
   currentEncounter.hp = currentEncounter.hpmodifier * diffuclty;
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
+  resourcesUI.coins = document.getElementById('coins'); resourcesUI.coins.innerHTML = "@" + resources.coins;
+  rollResourcesUI.biohazard = document.getElementById("biohazard"); rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
+  rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
+  console.log(characterGenerator.returnAttack("AAR"));
   
   for (i = 1; i < charlistItems.length; i++) {
     charlistItems[i] = document.getElementById("item-" + i);
@@ -109,7 +176,7 @@ window.onload = function() {
     buildingItems[i] = document.getElementById("building-" + i);
     if (buildingList[i] != undefined) {
       buildingItems[i].innerHTML = buildingList[i];
-      buildingItems[i].setAttribute('title', buildingItems[i]);
+      buildingItems[i].setAttribute('title', buildingItems[i].innerHTML);
     } else { buildingItems[i].innerHTML = ""; }
     }
 
@@ -166,7 +233,6 @@ function drop(ev) {
   var data = ev.dataTransfer.getData("text");
   //ev.target.innerHTML = data;
   moves[id - 1] = data;
-  console.log(data);
   setSlotColor(data, ev.target);
 }
 
@@ -174,11 +240,9 @@ function setSlotColor(move, slot) {
   var index = moveList.indexOf(move);
   switch(index) {
     case 1:
-      console.log("case 1");
       slot.style.color = "purple";
       break;
     case 2:
-      console.log("case 2");
       slot.style.color = "blue";
       break;
   }
@@ -187,7 +251,6 @@ function setSlotColor(move, slot) {
 function sendMoves() {
   for (var i = 0; i < moves.length; i++)
   {
-    console.log(moves[i]);
     moveReceiver(moves[i], currentEncounter, i);
   }
 
@@ -239,7 +302,7 @@ function diceRoll() {  // 21 = 6; 19,20 = 5; 16,17,18 = 4; 12,13,14,15 = 3; 7,8,
   }
 }
 
-function characterChoose(title) {
+function characterChoose(title, mode) {
   if (!inDungeon) {
     for (i = 0; i < charList.length; i++) {
       if (title == charList[i].name) {
@@ -247,15 +310,14 @@ function characterChoose(title) {
       }
     }
 
-    if (char != undefined) {
-      moveList = char.moveList;
-      gunList = char.gunList;
-      genes = char.genes;
+    moveList = char.moveList;
+    gunList = char.gunList;
+    genes = char.genes;
 
-      for (i = 1; i < moveList.length; i++) { 
-        if (moveList[i] != undefined || moveList[i] != "") {
-          charlistItems[i].innerHTML = moveList[i];
-          charlistItems[i].setAttribute('title', moveList[i]);
+    for (i = 1; i < moveList.length; i++) { 
+      if (moveList[i] != undefined || moveList[i] != "") {
+        charlistItems[i].innerHTML = moveList[i];
+        charlistItems[i].setAttribute('title', moveList[i]);
       }
     }
 
@@ -268,18 +330,113 @@ function characterChoose(title) {
 
       for (i = 1; i < genes.length; i++) {
         if (genes[i] != undefined && genes[i] != "empty") {
-          console.log(genes[i]);
           charlistGenes[i].innerHTML = geneIcons(genes[i]);
           charlistGenes[i].setAttribute('title', genes[i]);
         }
         else if (genes[i] == "empty") {
-          console.log("empty");
           charlistGenes[i].innerHTML = "";
+        }
+
+        if (mode == "preview" || rolledChar != char) {
+          rolledChar = char;
+          document.getElementById("blocker-REQ").classList.toggle("hidden");
+          rollREQbutton.classList.toggle("hidden");
+          document.getElementById("delete-REQ").classList.toggle("hidden");
+          document.getElementById("save-REQ").classList.toggle("hidden");
         }
       }
     }
     }
+
+function deleteREQ() {
+  rollResources.biohazard += rolledChar.resources.biohazard;
+  rollResources.deadbones += rolledChar.resources.deadbones;
+  updateUI();
+  rolledChar = {};
+  document.getElementById("REQ-preview").innerHTML = "";
+  document.getElementById("blocker-REQ").classList.toggle("hidden");
+  rollREQbutton.classList.toggle("hidden");
+  document.getElementById("delete-REQ").classList.toggle("hidden");
+  document.getElementById("save-REQ").classList.toggle("hidden");
 }
+
+function saveREQ() {  //develop better way!!
+  isSavingREQ = true;
+  document.getElementById("chooseSlotText").classList.toggle("hidden");
+  document.getElementById("delete-REQ").classList.toggle("hidden");
+  document.getElementById("save-REQ").classList.toggle("hidden");
+}
+
+function reqSlot(id) {
+  if (isSavingREQ && isSavingREQ != undefined) {
+    if (charList[id] != undefined) {
+      console.log("krya");
+      rollResources.biohazard += charList[id].resources.biohazard;
+      rollResources.deadbones += charList[id].resources.deadbones;
+      updateUI();
+    }
+
+    charList[id] = rolledChar;
+    document.getElementById("blocker-REQ").classList.toggle("hidden");
+    let item = document.getElementById("REQcharacter-" + id);
+    item.innerHTML = rolledChar.name.substring(0, 1).toUpperCase();
+    item.title = rolledChar.name;
+    let itemHR = document.getElementById("character-" + id);
+    itemHR.innerHTML = rolledChar.name.substring(0, 1).toUpperCase();
+    itemHR.title = rolledChar.name;
+    rolledChar = {};
+    isSavingREQ = false;
+    document.getElementById("chooseSlotText").classList.toggle("hidden");
+    rollREQbutton.classList.toggle("hidden");
+    document.getElementById("REQ-preview").innerHTML = "";
+  }
+}
+
+function rollREQ() {
+  if (resources.coins > 0) {
+    rolledChar = calcRoll();
+    resources.coins--;
+    document.getElementById("roll-REQ")
+    updateUI();
+    document.getElementById("REQ-preview").innerHTML = rolledChar.name.substring(0, 1).toUpperCase();
+    document.getElementById("REQ-preview").title = rolledChar.name.charAt(0).toLowerCase() + rolledChar.name.slice(1);  
+    characterChoose(rolledChar.name, 'preview');
+  }
+}
+
+function calcRoll() {
+  let biohazard = Math.round(rollResources.biohazard / 10);
+  let deadbones = Math.round(rollResources.deadbones / 10); 
+  let ran = random(0, 10);
+  let chart = [];
+  
+  for (i = 0; i < 10; i++) {
+    if (biohazard > i) {
+      chart[i] = "biohazard";
+    }
+    else if (biohazard + deadbones > i) {
+      chart[i] = "deadbones";
+    }
+    else {
+      chart[i] = "random";
+    }
+  }
+
+  if (chart[ran] == "biohazard") {  //optimize
+    return possibleChars.biohazard[random(0, possibleChars.biohazard.length)];
+  } else if (chart[ran] == "deadbones") {
+    return possibleChars.deadbones[random(0, possibleChars.deadbones.length)];
+  } else {
+    let randomInt = random(0, 1); //add automatic types counter
+    if (randomInt == 0 ) {
+      return possibleChars.biohazard[random(0, possibleChars.biohazard.length)];
+    } else if (randomInt == 1) {
+      return possibleChars.deadbones[random(0, possibleChars.deadbones.length)];
+  }
+}
+}
+
+//add save? button function + add to rollREQ() this shi
 
 /*encounter side*/
 function moveReceiver(move, receiver, index) { //automatic moves code
@@ -411,20 +568,46 @@ function selectAnimation(item, action) {  //optimize + more select animations
   }
 }
 
-function bazeInfo() { //optimize
-  bazeInfobox.classList.toggle("hidden");
+function HR() { //optimize
+  buildingHR.classList.toggle("hidden");
 
   for (i = 1; i < buildingItems.length; i++) {
     buildingItems[i].classList.toggle("hidden");
   }
 
   if (!inDungeon) {
-    document.getElementById("blocker").classList.toggle("hidden");
+    document.getElementById("blocker-HR").classList.toggle("hidden");
   }
 }
 
+function REQ() {
+  if (char != rolledChar) {
+    buildingREQ.classList.toggle("hidden");
+   rollREQbutton.classList.toggle("hidden");
+
+    for (i = 1; i < buildingItems.length; i++) {
+      buildingItems[i].classList.toggle("hidden");
+    }
+  }
+}
+
+function building(id) {
+  switch (id) {
+    case "HR":
+      HR();
+      break;
+    case "REQ":
+      REQ();
+  }
+}
 function toggleBigInfo() {
   bigInfo.classList.toggle("hidden");
+}
+
+function updateUI() {
+  resourcesUI.coins.innerHTML = "@" + resources.coins;
+  rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
+  rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
 }
 
 /*genes*/

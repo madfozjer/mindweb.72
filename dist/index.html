@@ -60,29 +60,54 @@
             </div>
         </div>
         <div id="baze" class="row-start-1 standard-border border-b-2 grid grid-cols-3 grid-rows-3 p-2 gap-2 text-2xl">
-            <div id="building-1" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="building-2" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="building-3" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="building-4" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="building-5" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="building-6" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="building-7" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="building-8" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="building-9" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="bazeInfo()"></div>
-            <div id="baze-infobox" class="flex hidden row-span-3 col-span-3 border-2 justify-center border-dotted standard-border">
-                <button onclick="bazeInfo()" class="block h-8 text-red-500 pl-2 mr-auto">x</button>
+            <div id="building-1" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="building(this.title)"></div>
+            <div id="building-2" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="building(this.title)"></div>
+            <div id="building-3" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="building(this.title)"></div>
+            <div id="building-4" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="building(this.title)"></div>
+            <div id="building-5" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="building(this.title)"></div>
+            <div id="building-6" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="building(this.title)"></div>
+            <div id="building-7" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="building(this.title)"></div>
+            <div id="building-8" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="building(this.title)"></div>
+            <div id="building-9" class="flex border-2 standard-border border-dotted justify-center items-center hover:cursor-pointer" onclick="building()"></div>
+            <div id="HR-building" class="flex hidden row-span-3 col-span-3 border-2 justify-center border-dotted standard-border">
+                <button title="HR" onclick="building(this.title)" class="block h-8 text-red-500 pl-2 mr-auto">x</button>
                 <div class="w-ful block self-center mr-auto">
                     <h3 class="text-3xl">Human Resources</h3>
-                    <div class="text-sm italic" id="blocker">blocked</div>
+                    <div class="text-sm italic" id="blocker-HR">blocked</div>
                     <div class="flex justify-center">
-                        <div onclick="characterChoose(this.title)" id="character-1" title="alex" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">A</div>
-                        <div onclick="characterChoose(this.title)" id="character-2" title="carlos" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">C</div>
-                        <div onclick="characterChoose(this.title)" id="character-3" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
+                        <div onclick="characterChoose(this.title, 'choose')" id="character-0" title="alex" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">A</div>
+                        <div onclick="characterChoose(this.title, 'choose')" id="character-1" title="carlos" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">C</div>
+                        <div onclick="characterChoose(this.title, 'choose')" id="character-2" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
                     </div>
                 </div>
             </div>
-            <div id="resources" class="text-xl">
-                <div>@3</div>
+            <div id="REQ-building" class="flex hidden row-span-3 col-span-3 border-2 justify-center border-dotted standard-border">
+                <button title="REQ" onclick="building(this.title)" class="block h-8 text-red-500 pl-2 mr-auto">x</button>
+                <div class="w-ful block self-center mr-auto">
+                    <h3 class="text-3xl">Recureitment Office</h3>
+                    <div class="text-sm italic hidden" id="blocker-REQ">blocked</div>
+                    <div class="flex justify-center"> <!--do shi-->
+                        <div id="REQcharacter-0" title="alex" onclick="reqSlot(0)" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">A</div>
+                        <div id="REQcharacter-1" title="carlos" onclick="reqSlot(1)" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">C</div>
+                        <div id="REQcharacter-2" onclick="reqSlot(2)"  class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
+                    </div>
+                    <div class="flex justify-center">
+                        <button onclick="rollREQ()" class="bg-gray-300 text-lg border-2 standard-border border-dotted m-2 p-1 hidden" id="roll-REQ">roll</button>
+                        <button onclick="saveREQ()" class="bg-green-300 text-lg border-2 standard-border border-dotted m-2 p-1 hidden" id="save-REQ">save?</button>
+                        <button onclick="deleteREQ()" class="bg-red-300 text-lg border-2 standard-border border-dotted m-2 p-1 hidden" id="delete-REQ">delete!</button>
+                        <div id="chooseSlotText" class="hidden">choose where you want to put it</div>
+                    </div>
+                    <div class="flex justify-center">
+                        <div id="REQ-preview" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
+                    </div>
+                    <div class="text-sm pt-12">
+                        <div id="biohazard" class="text-green-500">50% biohazard</div>
+                        <div id="deadbones" class="text-purple-500">30% dead bones</div>
+                    </div>
+                </div>
+            </div>
+            <div id="resources" class="text-xl flex gap-3">
+                <div id="coins">@3</div>
             </div>
         </div>
         <div id="charlist" class="flex flex-col col-start-1 justify-end row-span-1 col-span-1 mb-6 gap-6 standard-border">
