@@ -1,0 +1,7 @@
+node_modules/
+
+#all todo's
+*.todo
+
+#vsc workspace files
+*.code-workspace
