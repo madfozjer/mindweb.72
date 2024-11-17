@@ -7,7 +7,11 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "express": "^4.19.2",
+<<<<<<< HEAD
     "tailwindcss": "^3.4.15"
+=======
+    "tailwindcss": "^3.4.10"
+>>>>>>> 152b206a3f8491019a1bae1cf3c961d9324b26d2
   },
   "scripts": {
     "style": "tailwindcss -i ./public/input.css -o ./dist/style.css --watch",
