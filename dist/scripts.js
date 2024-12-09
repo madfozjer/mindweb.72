@@ -1,27 +1,27 @@
 /*database*/
 var player = 
 {
-  hp: 10,
+  hp: 15,
   moveList: []
 }
 
 var sousid = 
 {
   name: "sousid",
-  move: "AA",
+  move: "CA+",
   image: "#",
-  hpmodifier: 1,
-  hp: 0,
+  basehp: 8,
+  hp: 8,
   value: 2
 }
 
 var sus = 
 {
   name: "sus",
-  move: "AA",
+  move: "CA+",
   image: "$",
-  hpmodifier: 1,
-  hp: 0,
+  basehp: 10,
+  hp: 10,
   value: 1
 }
 
@@ -62,11 +62,13 @@ var buildingItems = [];
 var bigInfo;
 var rollREQbutton;
 var attackButtons = [];
+var damageDealtUI;
+var damageReceivedUI;
 
 /*current state*/
-var diffuclty = 10;
-var encounterID = 0;
-var currentEncounter;
+var diffuclty = 1;
+var encounterID = 1;
+var currentEncounter; 
 var moves = [];
 var diceValues = [];
 var inDungeon = false;
@@ -74,11 +76,14 @@ var char = "";
 let rolledChar = {};
 var isSavingREQ = false;
 var isPreviewingREQ = false;
+var damageDealt = 0;
+var damageReceived = 0;
 
 /*lists*/
 var moveList = [""]
 var gunList= ["", "CAR", "AAR"]
-var encounterList = [sousid, sus, sousid];
+var encounterList = [];
+var possibleEncounters = [sousid, sus, sus];
 var genesList = [];
 var buildingList = ["", "HR", "REQ"];
 var charList = [alex, carlos];
@@ -143,6 +148,7 @@ const  characterGenerator = {
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
+  encounterList = generateEncounters(3);
   encounterHPbar = document.getElementById("encounter-healthbar");
   healthbar = document.getElementById("healthbar");
   encounterHUD.image = document.getElementById("encounter-pfp");
@@ -156,12 +162,14 @@ window.onload = function() {
   buildingItems.length = 10;
   buildingList.length = 10;
   encounterID += 1;
-  currentEncounter.hp = currentEncounter.hpmodifier * diffuclty;
+  currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
   resourcesUI.coins = document.getElementById('coins'); resourcesUI.coins.innerHTML = "@" + resources.coins;
   rollResourcesUI.biohazard = document.getElementById("biohazard"); rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
+  damageDealtUI = document.getElementById("damage-dealt");
+  damageReceivedUI = document.getElementById("damage-received");
   
   for (i = 1; i < charlistItems.length; i++) {
     charlistItems[i] = document.getElementById("item-" + i);
@@ -193,13 +201,13 @@ window.onload = function() {
 
 /*game master*/
 function nextEncounter() {
-  if (encounterID <= encounterList.length - 1) {
+  if (encounterID <= encounterList.length) {
    resources.coins += currentEncounter.value;
    updateUI();
-   console.log(resources.coins);
-   currentEncounter = encounterList[encounterID];
+   currentEncounter = encounterList[encounterID - 1];
+   diffuclty++;
    encounterID += 1;
-   currentEncounter.hp = currentEncounter.hpmodifier * diffuclty;
+   currentEncounter.hp = Math.floor(currentEncounter.basehp + (diffuclty / 10));
    encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
    encounterHUD.image.innerHTML = currentEncounter.image;
    encounterHUD.name.innerHTML = currentEncounter.name;
@@ -208,18 +216,23 @@ function nextEncounter() {
 }
 
 function win() {
+  updateUI();
+  resources.coins += diffuclty;
   let text;
   text = document.getElementById("big-text");
   text.innerHTML = "you won";
   text.classList.toggle("hidden");
+  goDungeon();
 }
 
 function lost() {
+  updateUI();
   let text;
   text = document.getElementById("big-text");
   text.innerHTML = "you lost";
   text.classList.toggle("hidden");
   text.classList.toggle("dark");
+  goDungeon();
 }
 
 /*move manipulation*/
@@ -254,6 +267,9 @@ function setSlotColor(move, slot) {
 }
 
 function sendMoves() {
+  damageDealt = 0;
+  damageReceived = 0;
+
   for (var i = 0; i < moves.length; i++)
   {
     moveReceiver(moves[i], currentEncounter, i);
@@ -263,6 +279,7 @@ function sendMoves() {
     genetics(genesList[i], "post");
   }
 
+  damageDealtUI.innerHTML = "-" + damageDealt;
   encounterMove(); //TODO await/async implementation
   turnEnd();
   diceRoller();
@@ -376,7 +393,6 @@ function saveREQ() {  //develop better way!!
 function reqSlot(id) {
   if (isSavingREQ && isSavingREQ != undefined) {
     if (charList[id] != undefined) {
-      console.log("krya");
       rollResources.biohazard += charList[id].resources.biohazard;
       rollResources.deadbones += charList[id].resources.deadbones;
       updateUI();
@@ -408,6 +424,7 @@ function rollREQ() {
     document.getElementById("REQ-preview").innerHTML = rolledChar.name.substring(0, 1).toUpperCase();
     document.getElementById("REQ-preview").title = rolledChar.name.charAt(0).toLowerCase() + rolledChar.name.slice(1);  
     characterChoose(rolledChar.name, 'preview');
+    document.getElementById("blocker-HR").classList.toggle("hidden");
     isPreviewingREQ = true;
   }
 }
@@ -451,10 +468,13 @@ function moveReceiver(move, receiver, index) { //automatic moves code
   if (receiver == currentEncounter) {
     switch (move) {
       case "AA":
-        receiver.hp -= diceValues[index + 1];
+        let random = diceValues[index + 1];
+        receiver.hp -= random;
+        damageDealt += random;
         break;
       case "CA+":
         receiver.hp -= 2;
+        damageDealt += 2;
         break;
       default:
         console.log("move receiver error");
@@ -463,10 +483,13 @@ function moveReceiver(move, receiver, index) { //automatic moves code
   else if (receiver == player) {
     switch (move) {
       case "AA":
-        receiver.hp -= 4;
+        let random = random(1, 3)
+        receiver.hp -= random;
+        damageReceived += random;
         break;
       case "CA+":
-        receiver.hp -= 6;
+        receiver.hp -= 2;
+        damageReceived += 2;
         break;
       default:
         console.log("move receiver error");
@@ -488,6 +511,7 @@ function endEncounter() {
 
 function encounterMove() {
   moveReceiver(currentEncounter.move, player);
+  damageReceivedUI.innerHTML = "-" + damageReceived;
 
   if (player.hp <= 0)
     lost();
@@ -499,21 +523,40 @@ function goDungeon(button) {
     var dungen = document.getElementById("dungeon-wrapper");
     
     for (i = 1; i < moveList.length - 1; i++) {
-      console.log(moveList[i]);
       let item = document.getElementById(moveList[i]);
       item.id = moveList[i];
       item.id.innerHTML = i + " " + moveList[i].name;
       item.classList.toggle("hidden");
     }
-
-    button.classList.toggle("hidden")
-    inDungeon = true;
+    
+    if (button != undefined) { button.classList.toggle("hidden"); } else { document.getElementById("start-button").classList.toggle("hidden"); }
+    inDungeon = !inDungeon;
     dungen.classList.toggle("hidden");
+
+    if (!inDungeon) {
+      encounterList = generateEncounters(3);
+      console.log(encounterList);
+      encounterID = 1;
+      currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
+      encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
+      console.log(currentEncounter.hp);
+      updateUI();
+    }
   }
   else {
     bigInfo.innerHTML = "choose character!";
     bigInfo.classList.toggle("hidden");
   }
+}
+
+function generateEncounters(n) {
+  let list = []; list.length = possibleEncounters.length;
+
+  for (i = 0; i < n; i++) {
+    list[i] = possibleEncounters[random(0, possibleEncounters.length)];
+  }
+
+  return list;
 }
 
 function hideMe(item) {
@@ -523,11 +566,11 @@ function hideMe(item) {
 function description(id) { //automatic descriptions
   switch (id) {
       case "AA":
-        charlistDescription.innerHTML = "really powerfull move";
+        charlistDescription.innerHTML = "really powerfull move. <br>dmg: d6";
         selectAnimation("AA", "mouseEnter");
         break;
       case "CA+":
-        charlistDescription.innerHTML = "less powerfull move";
+        charlistDescription.innerHTML = "less powerfull move. <br>dmg: 2";
         selectAnimation("CA+", "mouseEnter");
         break;
       case "CAR":
@@ -624,6 +667,7 @@ function updateUI() {
   resourcesUI.coins.innerHTML = "@" + resources.coins;
   rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
+  document.getElementById("progress-bar").innerHTML = encounterID + "/" + encounterList.length;
 }
 
 /*genes*/

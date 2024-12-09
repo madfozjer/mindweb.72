@@ -12,16 +12,16 @@
         border: 2px red solid;
     }
 </style>
-<body class="left-0 right-0 overflow-hidden">
-    <div id="big-text" onclick="hideMe(event.target)"  class="fixed  z-10 text-3xl bg-yellow-200 dark:bg-red-200 hover:cursor-pointer hidden" style="top: 40%; left: 50%; transform: translate(-50%, -50%);">
+<body class="left-0 right-0 overflow-hidden`">
+    <div id="big-text" onclick="hideMe(event.target)" class="fixed z-10 text-3xl bg-green-200 dark:bg-red-200 hover:cursor-pointer hidden" style="top: 40%; left: 50%; transform: translate(-50%, -50%);">
         you suck
     </div>
-    <div id="biginfobox" onclick="hideMe(event.target)" class="w-96 h-96 fixed border-2 standard-border border-dashed bg-white hidden hover:cursor-pointer" style="left: 50%; top: 50%; margin-top: -200px; margin-left: -150px; ">
-        <div class="pl-6">YEAH</div>
+    <div id="biginfobox" onclick="hideMe(event.target)" class="w-96 h-96 fixed border-2 standard-border border-dashed bg-white hover:cursor-pointer p-6 hidden" style="left: 50%; top: 50%; margin-top: -200px; margin-left: -150px; ">
+        <div>YEAH</div>
     </div>
     <div id="wrapper" class="grid grid-cols-3 grid-rows-2 w-screen h-screen">
         <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex flex-col justify-center items-center">
-            <button onclick="goDungeon(this)" class="bg-gray-300 border-2 standard-border p-2 block col-span-3 row-span-3 w-12 h-12">start</button>
+            <button id="start-button" onclick="goDungeon(this)" class="bg-gray-300 border-2 standard-border p-2 block col-span-3 row-span-3 w-12 h-12">start</button>
             <div class="hidden" id="dungeon-wrapper">
                 <div id="enemy-hud" class="flex flex-col justify-center h-48 items-center border-gray-500 border-2 border-dotted">
                     <div id="encounter-pfp" class="text-6xl relative font-light hover:cursor-help group">
@@ -39,6 +39,15 @@
                     <div id="healthbar">
                         <span class="text-red-500">your hp:</span> 10
                     </div>
+                    <div id="progress-bar">
+                        1/3
+                    </div>
+                    <div id="damage-dealt" class="text-green-600">
+                        0
+                    </div>
+                    <div id="damage-received" class="text-red-800">
+                        0
+                    </div>
                 </div>
                 <div class="grid grid-cols-5 gap-1">
                     <div ondragover="allowDrop(event)" ondrop="drop(event)" id="move-1" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">6</div>
@@ -54,13 +63,8 @@
                     <div class="text-red-800">5</div>
                 </div>-->
                 <div id="move-list" class="pl-3">
-<<<<<<< HEAD
                     <div id="AA" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" class="font-semibold hover:cursor-pointer hover:font-bold text-purple-800 hidden">1. AA</div>
                     <div id="CA+" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" class="font-semibold hover:cursor-pointer hover:font-bold text-blue-800 hidden">2. CA+</div>
-=======
-                    <div id="AA" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" class="font-semibold hover:cursor-pointer hover:font-bold text-purple-800">1. AA</div>
-                    <div id="CA+" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" class="font-semibold hover:cursor-pointer hover:font-bold text-blue-800">2. CA+</div>
->>>>>>> 152b206a3f8491019a1bae1cf3c961d9324b26d2
                 </div>
             </div>
         </div>
@@ -138,8 +142,8 @@
                     <div id="item-4" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
                 </div>
                 <div class="flex gap-4 border-l-2 standard-border pl-4 text-5xl -ml-2">
-                    <div id="gun-1" title="CAR" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer font-light">CAR</div>
-                    <div id="gun-2" title="AAR" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer font-light">AAR</div>
+                    <div id="gun-1" title="CAR" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer font-light"></div>
+                    <div id="gun-2" title="AAR" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer font-light"></div>
                 </div>
             </div>
             <div id="info" class="inline-block border-2 border-gray-500 h-48 mr-8 ml-7 pl-2 pt-4"></div> <!--responsobility-->
