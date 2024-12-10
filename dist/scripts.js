@@ -78,6 +78,7 @@ var isSavingREQ = false;
 var isPreviewingREQ = false;
 var damageDealt = 0;
 var damageReceived = 0;
+var charID = 0;
 
 /*lists*/
 var moveList = [""]
@@ -233,6 +234,12 @@ function lost() {
   text.classList.toggle("hidden");
   text.classList.toggle("dark");
   goDungeon();
+  encounterID = 0;
+  char = "";
+  charList.splice(charList, 1);
+  let item = document.getElementById("character-" + charID);
+  item.innerHTML = ""; item.removeAttribute("title");
+  charID = -1;
 }
 
 /*move manipulation*/
@@ -325,50 +332,53 @@ function diceRoll() {  // 21 = 6; 19,20 = 5; 16,17,18 = 4; 12,13,14,15 = 3; 7,8,
 }
 
 function characterChoose(title, mode) {
-  if (!inDungeon) {
-    for (i = 0; i < charList.length; i++) {
-      if (title == charList[i].name) {
-        char = charList[i];
+  if (title != "") {
+    if (!inDungeon) {
+      for (i = 0; i < charList.length; i++) {
+        if (title == charList[i].name) {
+          char = charList[i];
+          charID = i;
+        }
       }
-    }
-
-    moveList = char.moveList;
-    gunList = char.gunList;
-    genes = char.genes;
-
-    for (i = 1; i < moveList.length; i++) { 
-      if (moveList[i] != undefined || moveList[i] != "") {
-        charlistItems[i].innerHTML = moveList[i];
-        charlistItems[i].setAttribute('title', moveList[i]);
-      }
-    }
-
-      for (i = 1; i < gunList.length; i++) {
+  
+      moveList = char.moveList;
+      gunList = char.gunList;
+      genes = char.genes;
+  
+      for (i = 1; i < moveList.length; i++) { 
         if (moveList[i] != undefined || moveList[i] != "") {
-          charlistGuns[i].innerHTML = gunList[i];
-          charlistGuns[i].setAttribute('title', gunList[i]);
+          charlistItems[i].innerHTML = moveList[i];
+          charlistItems[i].setAttribute('title', moveList[i]);
         }
       }
-
-      for (i = 1; i < genes.length; i++) {
-        if (genes[i] != undefined && genes[i] != "empty") {
-          charlistGenes[i].innerHTML = geneIcons(genes[i]);
-          charlistGenes[i].setAttribute('title', genes[i]);
+  
+        for (i = 1; i < gunList.length; i++) {
+          if (moveList[i] != undefined || moveList[i] != "") {
+            charlistGuns[i].innerHTML = gunList[i];
+            charlistGuns[i].setAttribute('title', gunList[i]);
+          }
         }
-        else if (genes[i] == "empty") {
-          charlistGenes[i].innerHTML = "";
-        }
-
-        if (mode == "preview" || rolledChar != char) {
-          rolledChar = char;
-          document.getElementById("blocker-REQ").classList.toggle("hidden");
-          rollREQbutton.classList.toggle("hidden");
-          document.getElementById("delete-REQ").classList.toggle("hidden");
-          document.getElementById("save-REQ").classList.toggle("hidden");
+  
+        for (i = 1; i < genes.length; i++) {
+          if (genes[i] != undefined && genes[i] != "empty") {
+            charlistGenes[i].innerHTML = geneIcons(genes[i]);
+            charlistGenes[i].setAttribute('title', genes[i]);
+          }
+          else if (genes[i] == "empty") {
+            charlistGenes[i].innerHTML = "";
+          }
+  
+          if (mode == "preview" || rolledChar != char) {
+            rolledChar = char;
+            document.getElementById("blocker-REQ").classList.toggle("hidden");
+            rollREQbutton.classList.toggle("hidden");
+            document.getElementById("delete-REQ").classList.toggle("hidden");
+            document.getElementById("save-REQ").classList.toggle("hidden");
+          }
         }
       }
     }
-    }
+  }
 
 function deleteREQ() {
   rollResources.biohazard += rolledChar.resources.biohazard;
@@ -535,11 +545,9 @@ function goDungeon(button) {
 
     if (!inDungeon) {
       encounterList = generateEncounters(3);
-      console.log(encounterList);
       encounterID = 1;
       currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
       encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
-      console.log(currentEncounter.hp);
       updateUI();
     }
   }
