@@ -96,8 +96,8 @@ var resources = {
   coins: 3
 };
 var rollResources = {
-  biohazard: 40,
-  deadbones: 30
+  biohazard: 50,
+  deadbones: 50
 }
 var rollResourcesUI = {
   biohazard: {},
@@ -143,13 +143,24 @@ const  characterGenerator = {
     })
 
     return returnval;
+  },
+
+  returnGene(type) {
+    if (type == "biohazard") {
+      let list = ["empty", "empty", "energetic"]
+      return list[random(0, list.length)];
+    }
+    else if (type == "deadbones") {
+      let list = ["empty", "empty", "empty", "sanchin"];
+      return list[random(0, list.length)];
+    }
   }
 }
 
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
-  encounterList = generateEncounters(3);
+  encounterList = generateEncounters(5);
   encounterHPbar = document.getElementById("encounter-healthbar");
   healthbar = document.getElementById("healthbar");
   encounterHUD.image = document.getElementById("encounter-pfp");
@@ -197,7 +208,7 @@ window.onload = function() {
     moveSlots[i] = document.getElementById("move-" + i);
   }
 
-  diceValues.length = 5; diceRoller(); 
+  diceValues.length = 5; 
 }
 
 /*game master*/
@@ -227,7 +238,6 @@ function win() {
 }
 
 function lost() {
-  updateUI();
   let text;
   text = document.getElementById("big-text");
   text.innerHTML = "you lost";
@@ -240,6 +250,13 @@ function lost() {
   let item = document.getElementById("character-" + charID);
   item.innerHTML = ""; item.removeAttribute("title");
   charID = -1;
+  updateUI();
+}
+
+function retreat() {
+  goDungeon();
+  encounterID = 1;
+  diffuclty = 1;
 }
 
 /*move manipulation*/
@@ -331,19 +348,12 @@ function diceRoll() {  // 21 = 6; 19,20 = 5; 16,17,18 = 4; 12,13,14,15 = 3; 7,8,
   }
 }
 
-function characterChoose(title, mode) {
-  if (title != "") {
+function characterChoose(Char, mode) {
     if (!inDungeon) {
-      for (i = 0; i < charList.length; i++) {
-        if (title == charList[i].name) {
-          char = charList[i];
-          charID = i;
-        }
-      }
-  
-      moveList = char.moveList;
-      gunList = char.gunList;
-      genes = char.genes;
+      moveList = Char.moveList;
+      gunList = Char.gunList;
+      genes = Char.genes;
+      console.log(genes);
   
       for (i = 1; i < moveList.length; i++) { 
         if (moveList[i] != undefined || moveList[i] != "") {
@@ -361,15 +371,19 @@ function characterChoose(title, mode) {
   
         for (i = 1; i < genes.length; i++) {
           if (genes[i] != undefined && genes[i] != "empty") {
-            charlistGenes[i].innerHTML = geneIcons(genes[i]);
+            genesList[i] = genes[i];
+            console.log(genesList[i]);
+            charlistGenes[i].innerHTML = geneIcons(genesList[i]);
             charlistGenes[i].setAttribute('title', genes[i]);
           }
           else if (genes[i] == "empty") {
             charlistGenes[i].innerHTML = "";
           }
+
+        char = Char;
   
-          if (mode == "preview" || rolledChar != char) {
-            rolledChar = char;
+          if (mode == "preview") {
+            rolledChar = Char;
             document.getElementById("blocker-REQ").classList.toggle("hidden");
             rollREQbutton.classList.toggle("hidden");
             document.getElementById("delete-REQ").classList.toggle("hidden");
@@ -377,8 +391,7 @@ function characterChoose(title, mode) {
           }
         }
       }
-    }
-  }
+}
 
 function deleteREQ() {
   rollResources.biohazard += rolledChar.resources.biohazard;
@@ -402,12 +415,9 @@ function saveREQ() {  //develop better way!!
 
 function reqSlot(id) {
   if (isSavingREQ && isSavingREQ != undefined) {
-    if (charList[id] != undefined) {
-      rollResources.biohazard += charList[id].resources.biohazard;
-      rollResources.deadbones += charList[id].resources.deadbones;
-      updateUI();
-    }
-
+    rollResources.biohazard -= char.resources.biohazard * 10;
+    rollResources.deadbones -= char.resources.deadbones * 10;
+    updateUI();
     charList[id] = rolledChar;
     document.getElementById("blocker-REQ").classList.toggle("hidden");
     let item = document.getElementById("REQcharacter-" + id);
@@ -427,15 +437,15 @@ function reqSlot(id) {
 
 function rollREQ() {
   if (resources.coins > 0) {
-    rolledChar = calcRoll();
+    rolledChar = generateCharacter();
+    console.log(rolledChar);
     resources.coins--;
     document.getElementById("roll-REQ")
     updateUI();
     document.getElementById("REQ-preview").innerHTML = rolledChar.name.substring(0, 1).toUpperCase();
     document.getElementById("REQ-preview").title = rolledChar.name.charAt(0).toLowerCase() + rolledChar.name.slice(1);  
-    characterChoose(rolledChar.name, 'preview');
-    document.getElementById("blocker-HR").classList.toggle("hidden");
-    isPreviewingREQ = true;
+    characterChoose(rolledChar, 'preview');
+    isPreviewingREQ = true; //when save char, delete x5 rollresources
   }
 }
 
@@ -471,7 +481,75 @@ function calcRoll() {
 }
 }
 
-//add save? button function + add to rollREQ() this shi
+function generateCharacter() {
+  let biohazard = Math.round(rollResources.biohazard / 10);
+  let deadbones = Math.round(rollResources.deadbones / 10); 
+  let name = characterGenerator.returnRandomName();
+  let gunList = [""];
+  let geneList = [""];
+  let resources = {biohazard: 0, deadbones: 0 };
+  let ran = random(1, 10);
+  
+  let n = random(2, 4);
+  for (i = 1; i < n; i++) {
+    let type = (ran > biohazard) ? "biohazard" : "deadbones";
+    gunList[i] = characterGenerator.returnGun(type);
+
+    if (type == "biohazard") { resources.biohazard++; }
+    else if (type == "deadbones") { resources.deadbones++; }
+  }
+
+  for (i = 0; i < gunList.length; i++) {
+    for (a = 0; a < gunList.length; a++) {
+      if (gunList[i] == gunList[a] && a != i) {
+        gunList.splice(a, 1);
+      }
+    }
+  }
+
+  n = random(2, 5);
+  for (i = 1; i < gunList.length; i++) {
+    for (a = 1; a < n; a++) {
+      let moves = characterGenerator.returnAttack(gunList[i]);
+      let ran = random(0, moves.length);
+      moveList[a] = moves[ran];
+    }
+  }
+
+  for (i = 0; i < moveList.length; i++) {
+    for (a = 0; a < moveList.length; a++) {
+      if (moveList[i] == moveList[a] && a != i) {
+        moveList.splice(a, 1);
+      }
+    }
+  }
+
+  n = random(2, 4);
+  for (i = 1; i < n; i++) {
+    let type = (ran > biohazard) ? "biohazard" : "deadbones";
+    geneList[i] = characterGenerator.returnGene(type);
+
+    if (geneList[i] == "empty") {
+      geneList.splice(a, 1);
+      break;
+    }
+
+    if (type == "biohazard") { resources.biohazard++; }
+    else if (type == "deadbones") { resources.deadbones++; }
+  }
+
+  for (i = 0; i < gunList.length; i++) {
+    for (a = 0; a < gunList.length; a++) {
+      if (geneList[i] == geneList[a] && a != i) {
+        geneList.splice(a, 1);
+      }
+    }
+  }
+
+  moveList[moveList.length] = "";
+
+  return { name: name, moveList: moveList, gunList: gunList, genes: geneList, resources: resources };
+}
 
 /*encounter side*/
 function moveReceiver(move, receiver, index) { //automatic moves code
@@ -544,12 +622,14 @@ function goDungeon(button) {
     dungen.classList.toggle("hidden");
 
     if (!inDungeon) {
-      encounterList = generateEncounters(3);
+      encounterList = generateEncounters(5);
       encounterID = 1;
       currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
-      encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
+      encounterHPbar.innerHT = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
       updateUI();
     }
+
+    diceRoller(); 
   }
   else {
     bigInfo.innerHTML = "choose character!";
@@ -593,6 +673,9 @@ function description(id) { //automatic descriptions
         break;
       case "energetic":
         charlistDescription.innerHTML = "a lot of energy in this legs and mind. and above legs also.";
+        break;
+      case "sanchin":
+        charlistDescription.innerHTML = "ancient samurai breathing technique, that heals your mental health (smoking doesn't by the way).";
         break;
     case "standart":
       selectAnimation("", "mouseLeave");
@@ -676,20 +759,28 @@ function updateUI() {
   rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
   document.getElementById("progress-bar").innerHTML = encounterID + "/" + encounterList.length;
+
+  for (i = 0; i < 3; i++) {
+    document.getElementById("REQcharacter-" + i).innerHTML = document.getElementById("character-" + i).innerHTML;
+  }
 }
 
 /*genes*/
-function genetics(gene, stage) { //automatic genes
+function genetics(gene, stage) { //oop genes
   if (stage == "pre") {
     switch(gene) {
       case "energetic":
         diceValues[1] += 1;
         moveSlots[1].innerHTML = diceValues[1];
         moveSlots[1].style.color = "red";
+        break;
     }
   }
   else if (stage == "post") {
     switch(gene) {
+      case "sanchin":
+        player.hp++;
+        break;
     }
   }
 }
@@ -698,6 +789,10 @@ function geneIcons(gene) {
   switch(gene) {
     case "energetic":
       return "⚡";
+      break;
+    case "sanchin":
+      return "🀀";
+      break;
   }
 }
 

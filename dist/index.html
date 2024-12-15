@@ -23,6 +23,7 @@
         <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex flex-col justify-center items-center">
             <button id="start-button" onclick="goDungeon(this)" class="bg-gray-300 border-2 standard-border p-2 block col-span-3 row-span-3 w-12 h-12">start</button>
             <div class="hidden" id="dungeon-wrapper">
+                <button id="retreat" onclick="retreat()">🏃🏻‍♀️ retreat</button>
                 <div id="enemy-hud" class="flex flex-col justify-center h-48 items-center border-gray-500 border-2 border-dotted">
                     <div id="encounter-pfp" class="text-6xl relative font-light hover:cursor-help group">
                         #
@@ -84,9 +85,9 @@
                     <h3 class="text-3xl">Human Resources</h3>
                     <div class="text-sm italic" id="blocker-HR">blocked</div>
                     <div class="flex justify-center">
-                        <div onclick="characterChoose(this.title, 'choose')" id="character-0" title="alex" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">A</div>
-                        <div onclick="characterChoose(this.title, 'choose')" id="character-1" title="carlos" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">C</div>
-                        <div onclick="characterChoose(this.title, 'choose')" id="character-2" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
+                        <div onclick="characterChoose(charList[0], 'choose')" id="character-0" title="alex" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">A</div>
+                        <div onclick="characterChoose(charList[1], 'choose')" id="character-1" title="carlos" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">C</div>
+                        <div onclick="characterChoose(charList[2], 'choose')" id="character-2" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
                     </div>
                 </div>
             </div>
