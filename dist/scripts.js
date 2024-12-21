@@ -72,22 +72,23 @@ var currentEncounter;
 var moves = [];
 var diceValues = [];
 var inDungeon = false;
-var char = "";
+var char;
 let rolledChar = {};
 var isSavingREQ = false;
 var isPreviewingREQ = false;
 var damageDealt = 0;
 var damageReceived = 0;
 var charID = 0;
+var backup;
 
 /*lists*/
 var moveList = [""]
-var gunList= ["", "CAR", "AAR"]
+var gunList= [""]
 var encounterList = [];
 var possibleEncounters = [sousid, sus, sus];
 var genesList = [];
 var buildingList = ["", "HR", "REQ"];
-var charList = [alex, carlos];
+var charList = [];
 var possibleChars = {
   biohazard: [alex],
   deadbones: [carlos]
@@ -147,7 +148,7 @@ const  characterGenerator = {
 
   returnGene(type) {
     if (type == "biohazard") {
-      let list = ["empty", "empty", "energetic"]
+      let list = ["empty", "empty", "energetic"]  //rewrite like this { empty: 99, energetic: 1 } out of 100
       return list[random(0, list.length)];
     }
     else if (type == "deadbones") {
@@ -173,7 +174,6 @@ window.onload = function() {
   rollREQbutton =  document.getElementById("roll-REQ");
   buildingItems.length = 10;
   buildingList.length = 10;
-  encounterID += 1;
   currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
@@ -245,11 +245,13 @@ function lost() {
   text.classList.toggle("dark");
   goDungeon();
   encounterID = 0;
+  diffuculty = 1;
   char = "";
-  charList.splice(charList, 1);
+  charList[charID] = "";
   let item = document.getElementById("character-" + charID);
   item.innerHTML = ""; item.removeAttribute("title");
   charID = -1;
+  turnOffMoveUI();
   updateUI();
 }
 
@@ -274,19 +276,20 @@ function drop(ev) {
   var id = ev.target.id.toString().substring(5);
   var data = ev.dataTransfer.getData("text");
   //ev.target.innerHTML = data;
-  moves[id - 1] = data;
+  moves[id] = data;
   setSlotColor(data, ev.target);
 }
 
 function setSlotColor(move, slot) {
-  var index = moveList.indexOf(move);
-  switch(index) {
-    case 1:
-      slot.style.color = "purple";
-      break;
-    case 2:
-      slot.style.color = "blue";
-      break;
+  var index = moveList.indexOf(move.substr(0, move.length - 5));
+  slot.style.color = returnMoveColor(moveList[index]);
+}
+
+function removeMove(id) {
+  if (moves[id] != null) {
+    moves[id] = null;
+    let slot = document.getElementById("move-" + id);
+    slot.style.color = "#0c0c0c";
   }
 }
 
@@ -294,13 +297,15 @@ function sendMoves() {
   damageDealt = 0;
   damageReceived = 0;
 
-  for (var i = 0; i < moves.length; i++)
+  for (var i = 1; i < moves.length; i++)
   {
-    moveReceiver(moves[i], currentEncounter, i);
+    if (moves[i] != undefined) {
+      moveReceiver(moves[i], currentEncounter, i);
+    }
   }
 
-  for (i = 0; i < genesList.length; i++) {
-    genetics(genesList[i], "post");
+  for (i = 1; i < genes.length; i++) {
+    genetics(genes[i], "post");
   }
 
   damageDealtUI.innerHTML = "-" + damageDealt;
@@ -315,8 +320,8 @@ function diceRoller() {
     moveSlots[i].innerHTML = diceValues[i];
   }
 
-  for (i = 0; i < genesList.length; i++) {
-    genetics(genesList[i], "pre");
+  for (i = 1; i < genes.length; i++) {
+    genetics(genes[i], "pre");
   }
 }
 
@@ -348,48 +353,89 @@ function diceRoll() {  // 21 = 6; 19,20 = 5; 16,17,18 = 4; 12,13,14,15 = 3; 7,8,
   }
 }
 
-function characterChoose(Char, mode) {
-    if (!inDungeon) {
-      moveList = Char.moveList;
-      gunList = Char.gunList;
-      genes = Char.genes;
-      console.log(genes);
-  
+function characterChoose(Char, mode, id) {
+    if (!inDungeon && mode != "preview" && charList[id] != undefined && charList[id] != "") {
+      char = Char;
+      moveList = char.moveList;
+      gunList = char.gunList;
+      genes = char.genes;
+      charID = id;
+
       for (i = 1; i < moveList.length; i++) { 
         if (moveList[i] != undefined || moveList[i] != "") {
           charlistItems[i].innerHTML = moveList[i];
           charlistItems[i].setAttribute('title', moveList[i]);
         }
       }
+
+      for (i = 1; i < charlistItems.length; i++) {
+        if (moveList[i] != charlistItems[i].innerHTML && charlistItems[i].innerHTML != undefined) {
+          charlistItems[i].innerHTML = "";
+          charlistItems[i].removeAttribute("title");
+        }
+      }
   
         for (i = 1; i < gunList.length; i++) {
-          if (moveList[i] != undefined || moveList[i] != "") {
+          if (gunList[i] != undefined || gunList[i] != "") {
             charlistGuns[i].innerHTML = gunList[i];
             charlistGuns[i].setAttribute('title', gunList[i]);
+          }
+        }
+
+        for (i = 1; i < charlistGuns.length; i++) {
+          if (gunList[i] != charlistGuns[i].innerHTML && charlistGuns[i].innerHTML != undefined) {
+            charlistGuns[i].innerHTML = "";
+            charlistGuns[i].removeAttribute("title");
           }
         }
   
         for (i = 1; i < genes.length; i++) {
           if (genes[i] != undefined && genes[i] != "empty") {
-            genesList[i] = genes[i];
-            console.log(genesList[i]);
-            charlistGenes[i].innerHTML = geneIcons(genesList[i]);
+            charlistGenes[i].innerHTML = geneIcons(genes[i]);
             charlistGenes[i].setAttribute('title', genes[i]);
           }
           else if (genes[i] == "empty") {
             charlistGenes[i].innerHTML = "";
           }
+        }
 
-        char = Char;
-  
-          if (mode == "preview") {
-            rolledChar = Char;
-            document.getElementById("blocker-REQ").classList.toggle("hidden");
-            rollREQbutton.classList.toggle("hidden");
-            document.getElementById("delete-REQ").classList.toggle("hidden");
-            document.getElementById("save-REQ").classList.toggle("hidden");
+        for (i = 1; i < genes.length; i++) {
+          if (geneIcons(genes[i]) != charlistGenes[i].innerHTML && charlistGenes[i].innerHTML != undefined) {
+            charlistGenes[i].innerHTML = "";
+            charlistGenes[i].removeAttribute("title");
           }
         }
+      }
+
+      if (mode == "preview") { //rewrite preview to be only visual
+        for (i = 1; i < rolledChar.moveList.length; i++) { 
+          if (rolledChar.moveList[i] != undefined || rolledChar.moveList[i] != "") {
+            charlistItems[i].innerHTML = rolledChar.moveList[i];
+            charlistItems[i].setAttribute('title', rolledChar.moveList[i]);
+          }
+        }
+
+        for (i = 1; i < rolledChar.gunList.length; i++) {
+          if (rolledChar.gunList[i] != undefined || rolledChar.gunList[i] != "") {
+            charlistGuns[i].innerHTML = rolledChar.gunList[i];
+            charlistGuns[i].setAttribute('title', rolledChar.gunList[i]);
+          }
+        }
+
+        for (i = 1; i < rolledChar.genes.length; i++) {
+          if (rolledChar.genes[i] != undefined && rolledChar.genes[i] != "empty") {
+            charlistGenes[i].innerHTML = geneIcons(rolledChar.genes[i]);
+            charlistGenes[i].setAttribute('title', rolledChar.genes[i]);
+          }
+          else if (rolledChar.genes[i] == "empty") {
+            charlistGenes[i].innerHTML = "";
+          }
+        }
+
+        document.getElementById("blocker-REQ").classList.toggle("hidden");
+        rollREQbutton.classList.toggle("hidden");
+        document.getElementById("delete-REQ").classList.toggle("hidden");
+        document.getElementById("save-REQ").classList.toggle("hidden");
       }
 }
 
@@ -404,6 +450,7 @@ function deleteREQ() {
   document.getElementById("delete-REQ").classList.toggle("hidden");
   document.getElementById("save-REQ").classList.toggle("hidden");
   isPreviewingREQ = false;
+  turnOffMoveUI()
 }
 
 function saveREQ() {  //develop better way!!
@@ -415,6 +462,7 @@ function saveREQ() {  //develop better way!!
 
 function reqSlot(id) {
   if (isSavingREQ && isSavingREQ != undefined) {
+    char = rolledChar;
     rollResources.biohazard -= char.resources.biohazard * 10;
     rollResources.deadbones -= char.resources.deadbones * 10;
     updateUI();
@@ -426,26 +474,41 @@ function reqSlot(id) {
     let itemHR = document.getElementById("character-" + id);
     itemHR.innerHTML = rolledChar.name.substring(0, 1).toUpperCase();
     itemHR.title = rolledChar.name;
+    document.getElementById("chooseSlotText").classList.toggle("hidden");
     rolledChar = {};
     isSavingREQ = false;
-    document.getElementById("chooseSlotText").classList.toggle("hidden");
     rollREQbutton.classList.toggle("hidden");
     document.getElementById("REQ-preview").innerHTML = "";
     isPreviewingREQ = false;
+    char = "";
+    turnOffMoveUI();
+}
+}
+
+function turnOffMoveUI() { //fix character choose when rolling
+  for (i = 1; i < charlistItems.length; i++) { 
+    charlistItems[i].innerHTML = "";
+  }
+
+  for (i = 1; i < charlistGuns.length; i++) { 
+    charlistGuns[i].innerHTML = "";
+  }
+
+  for (i = 1; i < charlistGenes.length; i++) { 
+    charlistGenes[i].innerHTML = "";
   }
 }
 
 function rollREQ() {
   if (resources.coins > 0) {
     rolledChar = generateCharacter();
-    console.log(rolledChar);
     resources.coins--;
-    document.getElementById("roll-REQ")
+    document.getElementById("roll-REQ");
     updateUI();
     document.getElementById("REQ-preview").innerHTML = rolledChar.name.substring(0, 1).toUpperCase();
     document.getElementById("REQ-preview").title = rolledChar.name.charAt(0).toLowerCase() + rolledChar.name.slice(1);  
     characterChoose(rolledChar, 'preview');
-    isPreviewingREQ = true; //when save char, delete x5 rollresources
+    isPreviewingREQ = true; 
   }
 }
 
@@ -484,85 +547,80 @@ function calcRoll() {
 function generateCharacter() {
   let biohazard = Math.round(rollResources.biohazard / 10);
   let deadbones = Math.round(rollResources.deadbones / 10); 
-  let name = characterGenerator.returnRandomName();
-  let gunList = [""];
-  let geneList = [""];
-  let resources = {biohazard: 0, deadbones: 0 };
+  let Name = characterGenerator.returnRandomName();
+  let gunlist = [""];
+  let genelist = [""];
+  let Resources = {biohazard: 0, deadbones: 0 };
   let ran = random(1, 10);
   
-  let n = random(2, 4);
+  let n = random(2, 4); gunlist.length = n;
   for (i = 1; i < n; i++) {
     let type = (ran > biohazard) ? "biohazard" : "deadbones";
-    gunList[i] = characterGenerator.returnGun(type);
+    gunlist[i] = characterGenerator.returnGun(type);
 
     if (type == "biohazard") { resources.biohazard++; }
     else if (type == "deadbones") { resources.deadbones++; }
   }
 
-  for (i = 0; i < gunList.length; i++) {
-    for (a = 0; a < gunList.length; a++) {
-      if (gunList[i] == gunList[a] && a != i) {
-        gunList.splice(a, 1);
+  for (i = 0; i < gunlist.length; i++) {
+    for (a = 0; a < gunlist.length; a++) {
+      if (gunlist[i] == gunlist[a] && a != i) {
+        gunlist.splice(a, 1);
       }
     }
   }
 
   n = random(2, 5);
-  for (i = 1; i < gunList.length; i++) {
+  movelist = []; movelist.length = n;
+  for (i = 1; i < gunlist.length; i++) {
     for (a = 1; a < n; a++) {
-      let moves = characterGenerator.returnAttack(gunList[i]);
+      let moves = characterGenerator.returnAttack(gunlist[i]);
       let ran = random(0, moves.length);
-      moveList[a] = moves[ran];
+      movelist[a] = moves[ran];
     }
   }
 
-  for (i = 0; i < moveList.length; i++) {
-    for (a = 0; a < moveList.length; a++) {
-      if (moveList[i] == moveList[a] && a != i) {
-        moveList.splice(a, 1);
+  for (i = 0; i < movelist.length; i++) {
+    for (a = 0; a < movelist.length; a++) {
+      if (movelist[i] == movelist[a] && a != i) {
+        movelist.splice(a, 1);
       }
     }
   }
 
-  n = random(2, 4);
+  n = random(2, 4); genelist.length = n;
   for (i = 1; i < n; i++) {
     let type = (ran > biohazard) ? "biohazard" : "deadbones";
-    geneList[i] = characterGenerator.returnGene(type);
+    genelist[i] = characterGenerator.returnGene(type);
 
-    if (geneList[i] == "empty") {
-      geneList.splice(a, 1);
+    if (genelist[i] == "empty") {
+      genelist.splice(a, 1);
       break;
     }
 
-    if (type == "biohazard") { resources.biohazard++; }
-    else if (type == "deadbones") { resources.deadbones++; }
+    if (type == "biohazard") { Resources.biohazard++; }
+    else if (type == "deadbones") { Resources.deadbones++; }
   }
 
-  for (i = 0; i < gunList.length; i++) {
-    for (a = 0; a < gunList.length; a++) {
-      if (geneList[i] == geneList[a] && a != i) {
-        geneList.splice(a, 1);
-      }
-    }
-  }
-
-  moveList[moveList.length] = "";
-
-  return { name: name, moveList: moveList, gunList: gunList, genes: geneList, resources: resources };
+  return { name: Name, moveList: movelist, gunList: gunlist, genes: genelist, resources: Resources };
 }
 
 /*encounter side*/
 function moveReceiver(move, receiver, index) { //automatic moves code
   if (receiver == currentEncounter) {
     switch (move) {
-      case "AA":
-        let random = diceValues[index + 1];
+      case "AA-move":
+        let random = diceValues[index];
         receiver.hp -= random;
         damageDealt += random;
         break;
-      case "CA+":
+      case "CA+-move":
         receiver.hp -= 2;
         damageDealt += 2;
+        break;
+      case "CA-move":
+        receiver.hp--;
+        damageDealt++;
         break;
       default:
         console.log("move receiver error");
@@ -608,14 +666,16 @@ function encounterMove() {
 /*ui manipulation*/
 function goDungeon(button) {
   if (char != "") {
-    var dungen = document.getElementById("dungeon-wrapper");
-    
     for (i = 1; i < moveList.length - 1; i++) {
-      let item = document.getElementById(moveList[i]);
-      item.id = moveList[i];
-      item.id.innerHTML = i + " " + moveList[i].name;
-      item.classList.toggle("hidden");
+      let item = document.getElementById(moveList[i].toString() + "-move");
+      if (item != null) {
+        item.id = moveList[i].toString();
+        item.id.innerHTML = i + " " + moveList[i].name;
+        item.classList.toggle("hidden");
+      }
     }
+
+    var dungen = document.getElementById("dungeon-wrapper");
     
     if (button != undefined) { button.classList.toggle("hidden"); } else { document.getElementById("start-button").classList.toggle("hidden"); }
     inDungeon = !inDungeon;
@@ -628,6 +688,18 @@ function goDungeon(button) {
       encounterHPbar.innerHT = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
       updateUI();
     }
+
+    let div = document.getElementById("move-list");
+    div.innerHTML = "";
+    for (i = 1; i < moveList.length; i++) {
+      if (moveList[i] != "" && moveList[i] != undefined) {
+        div.innerHTML += `<div id="` + moveList[i].toString() + `-move" class="font-semibold hover:cursor-pointer hover:font-bold" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" style="color: ` + returnMoveColor(moveList[i]) + `">` + i + `. ` + moveList[i].toString() + `</div>`;
+      }  
+    } 
+
+    /*for (i = 1; i < 5; i++) { ! MAKE COLORS TURN OFF
+      document.getElementById("move-" + i).classList.toggle(returnMoveColor(moveList[i]));
+    }*/
 
     diceRoller(); 
   }
@@ -653,23 +725,28 @@ function hideMe(item) {
 
 function description(id) { //automatic descriptions
   switch (id) {
-      case "AA":
-        charlistDescription.innerHTML = "really powerfull move. <br>dmg: d6";
+      case "AA-move":
+        charlistDescription.innerHTML = "really powerful move. <br>dmg: d6";
         selectAnimation("AA", "mouseEnter");
         break;
-      case "CA+":
-        charlistDescription.innerHTML = "less powerfull move. <br>dmg: 2";
+      case "CA+-move":
+        charlistDescription.innerHTML = "less powerful move. <br>dmg: 2";
         selectAnimation("CA+", "mouseEnter");
+        break;
+      case "CA-move":
+        charlistDescription.innerHTML = "less less powerful move. <br>dmg: 1";
+        selectAnimation("CA", "mouseEnter");
         break;
       case "CAR":
         charlistDescription.innerHTML = "lightsaber like knife";
         selectAnimation("CAR", "mouseEnter");
-        selectAnimation("CA+", "mouseEnter");
+        selectAnimation("AA", "mouseEnter");
         break;
       case "AAR":
         charlistDescription.innerHTML = "short gun for xptional marksmans, u know";
         selectAnimation("AAR", "mouseEnter");
-        selectAnimation("AA", "mouseEnter");
+        selectAnimation("CA+", "mouseEnter");
+        selectAnimation("CA", "mouseEnter");
         break;
       case "energetic":
         charlistDescription.innerHTML = "a lot of energy in this legs and mind. and above legs also.";
@@ -695,10 +772,11 @@ function selectAnimation(item, action) {  //optimize + more select animations
     }
   }
 
-  if (moveList.includes(item) && action == "mouseLeave") {
+  if (action == "mouseLeave") {
     for (i = 1; i < moveList.length; i++) {
-      if (charlistItems[i] != undefined)
+      if (charlistItems[i] != undefined) {
         charlistItems[i].style.fontWeight = 100;
+      }
     }
   }
 
@@ -755,6 +833,7 @@ function toggleBigInfo() {
 }
 
 function updateUI() {
+  healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
   resourcesUI.coins.innerHTML = "@" + resources.coins;
   rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
@@ -765,21 +844,31 @@ function updateUI() {
   }
 }
 
+function returnMoveColor(move) {
+  switch (move) {
+    case "AA":
+      return "purple";
+    case "CA":
+      return "red";
+    case "CA+":
+      return "darkred";
+  }
+}
+
 /*genes*/
 function genetics(gene, stage) { //oop genes
   if (stage == "pre") {
     switch(gene) {
       case "energetic":
         diceValues[1] += 1;
-        moveSlots[1].innerHTML = diceValues[1];
-        moveSlots[1].style.color = "red";
+        moveSlots[1].innerHTML = diceValues[1] + "*";
         break;
     }
   }
   else if (stage == "post") {
     switch(gene) {
       case "sanchin":
-        player.hp++;
+        player.hp += 1;
         break;
     }
   }

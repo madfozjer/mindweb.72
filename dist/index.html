@@ -7,11 +7,6 @@
     <link rel="stylesheet" href="style.css"> 
     <script src="scripts.js"></script>
 </head>
-<style>
-     {
-        border: 2px red solid;
-    }
-</style>
 <body class="left-0 right-0 overflow-hidden`">
     <div id="big-text" onclick="hideMe(event.target)" class="fixed z-10 text-3xl bg-green-200 dark:bg-red-200 hover:cursor-pointer hidden" style="top: 40%; left: 50%; transform: translate(-50%, -50%);">
         you suck
@@ -51,21 +46,14 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-5 gap-1">
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)" id="move-1" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">6</div>
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)"  id="move-2" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">3</div>
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)"  id="move-3" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">4</div>
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)"  id="move-4" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">5</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(1)" id="move-1" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(2)" id="move-2" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(3)" id="move-3" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(4)" id="move-4" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
                     <button onclick="sendMoves()">send</button>
                 </div>
-                <!--<div id="dice-values" class="grid grid-cols-5 gap-1 justify-items-center">
-                    <div class="text-yellow-900">6</div>
-                    <div class="text-blue-900">3</div>
-                    <div class="text-blue-900">4</div>
-                    <div class="text-red-800">5</div>
-                </div>-->
-                <div id="move-list" class="pl-3">
-                    <div id="AA" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" class="font-semibold hover:cursor-pointer hover:font-bold text-purple-800 hidden">1. AA</div>
-                    <div id="CA+" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" class="font-semibold hover:cursor-pointer hover:font-bold text-blue-800 hidden">2. CA+</div>
+                <div id="move-list" class="pl-3"> <!--generate it-->
+                    
                 </div>
             </div>
         </div>
@@ -85,9 +73,9 @@
                     <h3 class="text-3xl">Human Resources</h3>
                     <div class="text-sm italic" id="blocker-HR">blocked</div>
                     <div class="flex justify-center">
-                        <div onclick="characterChoose(charList[0], 'choose')" id="character-0" title="alex" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">A</div>
-                        <div onclick="characterChoose(charList[1], 'choose')" id="character-1" title="carlos" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">C</div>
-                        <div onclick="characterChoose(charList[2], 'choose')" id="character-2" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
+                        <div onclick="characterChoose(charList[0], 'choose', 0)" id="character-0" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
+                        <div onclick="characterChoose(charList[1],'choose', 1)" id="character-1" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
+                        <div onclick="characterChoose(charList[2],'choose', 2)" id="character-2" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
                     </div>
                 </div>
             </div>
@@ -97,8 +85,8 @@
                     <h3 class="text-3xl">Recureitment Office</h3>
                     <div class="text-sm italic hidden" id="blocker-REQ">blocked</div>
                     <div class="flex justify-center"> <!--do shi-->
-                        <div id="REQcharacter-0" title="alex" onclick="reqSlot(0)" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">A</div>
-                        <div id="REQcharacter-1" title="carlos" onclick="reqSlot(1)" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">C</div>
+                        <div id="REQcharacter-0" onclick="reqSlot(0)" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
+                        <div id="REQcharacter-1" onclick="reqSlot(1)" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
                         <div id="REQcharacter-2" onclick="reqSlot(2)"  class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
                     </div>
                     <div class="flex justify-center">
@@ -122,25 +110,25 @@
         </div>
         <div id="charlist" class="flex flex-col col-start-1 justify-end row-span-1 col-span-1 mb-6 gap-6 standard-border">
             <div id="genes" class="grid grid-cols-6 ml-8 mr-8 text-4xl gap-6">
-                <div id="gen-1" title="energetic" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
-                <div id="gen-2"></div>
-                <div id="gen-3"></div>
-                <div id="gen-4"></div>
-                <div id="gen-5"></div>
-                <div id="gen-6"></div>
-                <div id="gen-7"></div>
-                <div id="gen-8"></div>
-                <div id="gen-9"></div>
-                <div id="gen-10"></div>
-                <div id="gen-11"></div>
-                <div id="gen-12"></div>
+                <div id="gen-1" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-2" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-3" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-4" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-5" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-6" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-7" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-8" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-9" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-10" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-11" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
+                <div id="gen-12" title="" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer"></div>
             </div>
             <div class="flex ml-8 mr-8"> <!--fix justify-end-->
                 <div id="items" class="flex text-5xl font-thin gap-4"> <!--expand border-->
-                    <div id="item-1" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div> <!--colors-->
-                    <div id="item-2" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
-                    <div id="item-3" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
-                    <div id="item-4" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
+                    <div id="item-1" onmouseover="description(event.target.title + '-move')" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div> <!--colors-->
+                    <div id="item-2" onmouseover="description(event.target.title + '-move')" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
+                    <div id="item-3" onmouseover="description(event.target.title + '-move')" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
+                    <div id="item-4" onmouseover="description(event.target.title + '-move')" onmouseleave="description('standart')" class="inline-block hover:cursor-pointer"></div>
                 </div>
                 <div class="flex gap-4 border-l-2 standard-border pl-4 text-5xl -ml-2">
                     <div id="gun-1" title="CAR" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer font-light"></div>

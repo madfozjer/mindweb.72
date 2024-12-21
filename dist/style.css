@@ -786,10 +786,6 @@ video {
   overflow: hidden;
 }
 
-.border {
-  border-width: 1px;
-}
-
 .border-2 {
   border-width: 2px;
 }
@@ -931,11 +927,6 @@ video {
 
 .italic {
   font-style: italic;
-}
-
-.text-blue-800 {
-  --tw-text-opacity: 1;
-  color: rgb(30 64 175 / var(--tw-text-opacity, 1));
 }
 
 .text-blue-900 {
