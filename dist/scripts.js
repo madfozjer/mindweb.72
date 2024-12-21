@@ -1,10 +1,4 @@
 /*database*/
-var player = 
-{
-  hp: 15,
-  moveList: []
-}
-
 var sousid = 
 {
   name: "sousid",
@@ -80,6 +74,7 @@ var damageDealt = 0;
 var damageReceived = 0;
 var charID = 0;
 var backup;
+var hp = 0;
 
 /*lists*/
 var moveList = [""]
@@ -176,7 +171,6 @@ window.onload = function() {
   buildingList.length = 10;
   currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
-  healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
   resourcesUI.coins = document.getElementById('coins'); resourcesUI.coins.innerHTML = "@" + resources.coins;
   rollResourcesUI.biohazard = document.getElementById("biohazard"); rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
@@ -213,12 +207,12 @@ window.onload = function() {
 
 /*game master*/
 function nextEncounter() {
-  if (encounterID <= encounterList.length) {
+  if (encounterID <= encounterList.length - 1) {
    resources.coins += currentEncounter.value;
-   updateUI();
    currentEncounter = encounterList[encounterID - 1];
    diffuclty++;
-   encounterID += 1;
+   encounterID++
+   updateUI();
    currentEncounter.hp = Math.floor(currentEncounter.basehp + (diffuclty / 10));
    encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
    encounterHUD.image.innerHTML = currentEncounter.image;
@@ -244,7 +238,7 @@ function lost() {
   text.classList.toggle("hidden");
   text.classList.toggle("dark");
   goDungeon();
-  encounterID = 0;
+  encounterID = 1;
   diffuculty = 1;
   char = "";
   charList[charID] = "";
@@ -257,6 +251,7 @@ function lost() {
 
 function retreat() {
   goDungeon();
+  player.hp = hp;
   encounterID = 1;
   diffuclty = 1;
 }
@@ -465,7 +460,6 @@ function reqSlot(id) {
     char = rolledChar;
     rollResources.biohazard -= char.resources.biohazard * 10;
     rollResources.deadbones -= char.resources.deadbones * 10;
-    updateUI();
     charList[id] = rolledChar;
     document.getElementById("blocker-REQ").classList.toggle("hidden");
     let item = document.getElementById("REQcharacter-" + id);
@@ -500,6 +494,7 @@ function turnOffMoveUI() { //fix character choose when rolling
 }
 
 function rollREQ() {
+  console.log(chance(0, 100));
   if (resources.coins > 0) {
     rolledChar = generateCharacter();
     resources.coins--;
@@ -602,7 +597,9 @@ function generateCharacter() {
     else if (type == "deadbones") { Resources.deadbones++; }
   }
 
-  return { name: Name, moveList: movelist, gunList: gunlist, genes: genelist, resources: Resources };
+  let Hp = random(3, 25);
+
+  return { name: Name, moveList: movelist, gunList: gunlist, genes: genelist, resources: Resources, hp: Hp };
 }
 
 /*encounter side*/
@@ -645,7 +642,7 @@ function moveReceiver(move, receiver, index) { //automatic moves code
 
 function turnEnd() {
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
-  healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
+  healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + hp;
 
   if (currentEncounter.hp <= 0) 
     endEncounter();
@@ -659,13 +656,14 @@ function encounterMove() {
   moveReceiver(currentEncounter.move, player);
   damageReceivedUI.innerHTML = "-" + damageReceived;
 
-  if (player.hp <= 0)
+  if (hp <= 0)
     lost();
 }
 
 /*ui manipulation*/
 function goDungeon(button) {
   if (char != "") {
+    hp = char.hp;
     for (i = 1; i < moveList.length - 1; i++) {
       let item = document.getElementById(moveList[i].toString() + "-move");
       if (item != null) {
@@ -686,7 +684,6 @@ function goDungeon(button) {
       encounterID = 1;
       currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
       encounterHPbar.innerHT = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
-      updateUI();
     }
 
     let div = document.getElementById("move-list");
@@ -702,6 +699,7 @@ function goDungeon(button) {
     }*/
 
     diceRoller(); 
+    updateUI();
   }
   else {
     bigInfo.innerHTML = "choose character!";
@@ -833,7 +831,7 @@ function toggleBigInfo() {
 }
 
 function updateUI() {
-  healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + player.hp;
+  healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + hp;
   resourcesUI.coins.innerHTML = "@" + resources.coins;
   rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
@@ -868,7 +866,7 @@ function genetics(gene, stage) { //oop genes
   else if (stage == "post") {
     switch(gene) {
       case "sanchin":
-        player.hp += 1;
+        hp += 1;
         break;
     }
   }
@@ -888,4 +886,20 @@ function geneIcons(gene) {
 /*misc*/
 function random(min, max) {
   return Math.floor(Math.random() * (max - min) ) + min;
+}
+
+function chance(min, max) {
+  let ran = random(0, 100);
+  console.log(ran + " - seed");
+  let check = max;
+
+  while (true) {
+  console.log ((1 / check) * 100 + " for number " + check);
+    if ((1 / check) * 100 >= ran) {
+      return check;
+    }
+    else {
+      check--;
+    }
+  }
 }
