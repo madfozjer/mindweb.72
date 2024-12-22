@@ -94,7 +94,7 @@ var possibleEncounters = [sousid, sus, sus];
 var genesList = [];
 var buildingList = ["", "HR", "REQ"];
 var charList = [];
-var possibleChars = {
+var possibleChars = { //test
   biohazard: [alex],
   deadbones: [carlos]
 }
