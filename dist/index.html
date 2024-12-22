@@ -20,11 +20,8 @@
             <div class="hidden" id="dungeon-wrapper">
                 <button id="retreat" onclick="retreat()">🏃🏻‍♀️ retreat</button>
                 <div id="enemy-hud" class="flex flex-col justify-center h-48 items-center border-gray-500 border-2 border-dotted">
-                    <div id="encounter-pfp" class="text-6xl relative font-light hover:cursor-help group">
+                    <div id="encounter-pfp" class="text-6xl relative font-light hover:cursor-help group" onmouseover="description(currentEncounter.name)" onmouseleave="description('standart')">
                         #
-                        <div id="encounter-info" class="text-sm absolute invisible z-10 min-w-32 w-auto max-w-52 group-hover:visible border-2 border-gray-400" style="left: 105%; top: -5%;"> <!--fix width-->
-                            spider-like guy next door
-                        </div>
                     </div>
                     <div id="encounter-name" class="italic">sousid</div>
                 </div>
@@ -133,6 +130,10 @@
                 <div class="flex gap-4 border-l-2 standard-border pl-4 text-5xl -ml-2">
                     <div id="gun-1" title="CAR" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer font-light"></div>
                     <div id="gun-2" title="AAR" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer font-light"></div>
+                </div>
+                <div class="flex flex-col">
+                    <div id="name-preview" class="hidden"><span class="text-purple-400 font-semibold">your name:</span> Natalia</div>
+                    <div id="hp-preview" class="hidden"><span class="text-red-400 font-semibold">your hp:</span> 15</div>
                 </div>
             </div>
             <div id="info" class="inline-block border-2 border-gray-500 h-48 mr-8 ml-7 pl-2 pt-4"></div> <!--responsobility-->

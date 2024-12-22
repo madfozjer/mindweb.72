@@ -6,7 +6,12 @@ var sousid =
   image: "#",
   basehp: 8,
   hp: 8,
-  value: 2
+  value: 2,
+  rollResources: 
+  {
+    biohazard: 4,
+    deadbones: 0
+  }
 }
 
 var sus = 
@@ -16,7 +21,12 @@ var sus =
   image: "$",
   basehp: 10,
   hp: 10,
-  value: 1
+  value: 1,
+  rollResources: 
+  {
+    biohazard: 0,
+    deadbones: 5
+  }
 }
 
 //generate characters 
@@ -156,7 +166,7 @@ const  characterGenerator = {
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
-  encounterList = generateEncounters(5);
+  encounterList = generateEncounters(12);
   encounterHPbar = document.getElementById("encounter-healthbar");
   healthbar = document.getElementById("healthbar");
   encounterHUD.image = document.getElementById("encounter-pfp");
@@ -213,7 +223,7 @@ function nextEncounter() {
    diffuclty++;
    encounterID++
    updateUI();
-   currentEncounter.hp = Math.floor(currentEncounter.basehp + (diffuclty / 10));
+   currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty);
    encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
    encounterHUD.image.innerHTML = currentEncounter.image;
    encounterHUD.name.innerHTML = currentEncounter.name;
@@ -251,7 +261,7 @@ function lost() {
 
 function retreat() {
   goDungeon();
-  player.hp = hp;
+  char.hp = hp;
   encounterID = 1;
   diffuclty = 1;
 }
@@ -349,7 +359,7 @@ function diceRoll() {  // 21 = 6; 19,20 = 5; 16,17,18 = 4; 12,13,14,15 = 3; 7,8,
 }
 
 function characterChoose(Char, mode, id) {
-    if (!inDungeon && mode != "preview" && charList[id] != undefined && charList[id] != "") {
+    if (!inDungeon && mode != "preview" && charList[id] != undefined && charList[id] != "" && char != Char) {
       char = Char;
       moveList = char.moveList;
       gunList = char.gunList;
@@ -400,6 +410,14 @@ function characterChoose(Char, mode, id) {
             charlistGenes[i].removeAttribute("title");
           }
         }
+
+        let hpPreview = document.getElementById("hp-preview");
+        let namePreview = document.getElementById("name-preview");
+        hp = char.hp;
+        namePreview.innerHTML = `<span class="text-purple-400 font-semibold">your name:</span> ` + char.name + ``;
+        hpPreview.innerHTML = `<span class="text-red-400 font-semibold">your hp:</span> ` + hp + ``;
+        hpPreview.classList.toggle("hidden");
+        namePreview.classList.toggle("hidden");
       }
 
       if (mode == "preview") { //rewrite preview to be only visual
@@ -427,8 +445,21 @@ function characterChoose(Char, mode, id) {
           }
         }
 
+        for (i = 1; i < genes.length; i++) {
+          if (geneIcons(rolledChar.genes[i]) != charlistGenes[i].innerHTML && charlistGenes[i].innerHTML != undefined) {
+            charlistGenes[i].innerHTML = "";
+            charlistGenes[i].removeAttribute("title");
+          }
+        }
+
         document.getElementById("blocker-REQ").classList.toggle("hidden");
         rollREQbutton.classList.toggle("hidden");
+        let hpPreview = document.getElementById("hp-preview");
+        let namePreview = document.getElementById("name-preview");
+        namePreview.innerHTML = `<span class="text-purple-400 font-semibold">your name:</span> ` + rolledChar.name + ``;
+        hpPreview.innerHTML = `<span class="text-red-400 font-semibold">your hp:</span> ` + rolledChar.hp + ``;
+        hpPreview.classList.toggle("hidden");
+        namePreview.classList.toggle("hidden");
         document.getElementById("delete-REQ").classList.toggle("hidden");
         document.getElementById("save-REQ").classList.toggle("hidden");
       }
@@ -437,6 +468,8 @@ function characterChoose(Char, mode, id) {
 function deleteREQ() {
   rollResources.biohazard += rolledChar.resources.biohazard;
   rollResources.deadbones += rolledChar.resources.deadbones;
+  if (rollResources.biohazard < 0) { rollResources.biohazard = 0; } 
+  else if (rollResources.deadbones < 0) { rollResources.deadbones = 0; }
   updateUI();
   rolledChar = {};
   document.getElementById("REQ-preview").innerHTML = "";
@@ -445,7 +478,7 @@ function deleteREQ() {
   document.getElementById("delete-REQ").classList.toggle("hidden");
   document.getElementById("save-REQ").classList.toggle("hidden");
   isPreviewingREQ = false;
-  turnOffMoveUI()
+  turnOffMoveUI();
 }
 
 function saveREQ() {  //develop better way!!
@@ -458,8 +491,11 @@ function saveREQ() {  //develop better way!!
 function reqSlot(id) {
   if (isSavingREQ && isSavingREQ != undefined) {
     char = rolledChar;
-    rollResources.biohazard -= char.resources.biohazard * 10;
-    rollResources.deadbones -= char.resources.deadbones * 10;
+    rollResources.biohazard -= rolledChar.resources.biohazard * 10;
+    console.log(rolledChar.resources.biohazard);
+    rollResources.deadbones -= rolledChar.resources.deadbones * 10;
+    if (rollResources.biohazard < 0) { rollResources.biohazard = 0; } 
+    else if (rollResources.deadbones < 0) { rollResources.deadbones = 0; }
     charList[id] = rolledChar;
     document.getElementById("blocker-REQ").classList.toggle("hidden");
     let item = document.getElementById("REQcharacter-" + id);
@@ -476,10 +512,14 @@ function reqSlot(id) {
     isPreviewingREQ = false;
     char = "";
     turnOffMoveUI();
+    updateUI();
 }
 }
 
 function turnOffMoveUI() { //fix character choose when rolling
+  document.getElementById("name-preview").classList.toggle("hidden");
+  document.getElementById("hp-preview").classList.toggle("hidden");
+  
   for (i = 1; i < charlistItems.length; i++) { 
     charlistItems[i].innerHTML = "";
   }
@@ -494,8 +534,7 @@ function turnOffMoveUI() { //fix character choose when rolling
 }
 
 function rollREQ() {
-  console.log(chance(0, 100));
-  if (resources.coins > 0) {
+  if (resources.coins > 0 && !inDungeon) {
     rolledChar = generateCharacter();
     resources.coins--;
     document.getElementById("roll-REQ");
@@ -547,14 +586,14 @@ function generateCharacter() {
   let genelist = [""];
   let Resources = {biohazard: 0, deadbones: 0 };
   let ran = random(1, 10);
-  
-  let n = random(2, 4); gunlist.length = n;
+
+  let n = chance(2, 4); gunlist.length = n;
   for (i = 1; i < n; i++) {
     let type = (ran > biohazard) ? "biohazard" : "deadbones";
     gunlist[i] = characterGenerator.returnGun(type);
 
-    if (type == "biohazard") { resources.biohazard++; }
-    else if (type == "deadbones") { resources.deadbones++; }
+    if (type == "biohazard") { Resources.biohazard++; }
+    else if (type == "deadbones") { Resources.deadbones++; }
   }
 
   for (i = 0; i < gunlist.length; i++) {
@@ -565,7 +604,7 @@ function generateCharacter() {
     }
   }
 
-  n = random(2, 5);
+  n = chance(2, 5);
   movelist = []; movelist.length = n;
   for (i = 1; i < gunlist.length; i++) {
     for (a = 1; a < n; a++) {
@@ -583,7 +622,7 @@ function generateCharacter() {
     }
   }
 
-  n = random(2, 4); genelist.length = n;
+  n = chance(2, 12); genelist.length = n;
   for (i = 1; i < n; i++) {
     let type = (ran > biohazard) ? "biohazard" : "deadbones";
     genelist[i] = characterGenerator.returnGene(type);
@@ -597,7 +636,7 @@ function generateCharacter() {
     else if (type == "deadbones") { Resources.deadbones++; }
   }
 
-  let Hp = random(3, 25);
+  let Hp = chance(7, 25);
 
   return { name: Name, moveList: movelist, gunList: gunlist, genes: genelist, resources: Resources, hp: Hp };
 }
@@ -623,15 +662,15 @@ function moveReceiver(move, receiver, index) { //automatic moves code
         console.log("move receiver error");
     } 
   }
-  else if (receiver == player) {
+  else if (receiver == "player") {
     switch (move) {
       case "AA":
         let random = random(1, 3)
-        receiver.hp -= random;
+        hp -= random;
         damageReceived += random;
         break;
       case "CA+":
-        receiver.hp -= 2;
+        hp -= 2; hp
         damageReceived += 2;
         break;
       default:
@@ -644,8 +683,12 @@ function turnEnd() {
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + hp;
 
-  if (currentEncounter.hp <= 0) 
+  if (currentEncounter.hp <= 0) {
+    rollResources.biohazard += currentEncounter.rollResources.biohazard;
+    rollResources.deadbones += currentEncounter.rollResources.deadbones;
+    updateUI();
     endEncounter();
+  }
 }
 
 function endEncounter() {
@@ -653,7 +696,7 @@ function endEncounter() {
 }
 
 function encounterMove() {
-  moveReceiver(currentEncounter.move, player);
+  moveReceiver(currentEncounter.move, "player");
   damageReceivedUI.innerHTML = "-" + damageReceived;
 
   if (hp <= 0)
@@ -662,8 +705,8 @@ function encounterMove() {
 
 /*ui manipulation*/
 function goDungeon(button) {
-  if (char != "") {
-    hp = char.hp;
+  if (char != "" && char != undefined) {
+    document.getElementById("blocker-REQ").classList.toggle("hidden");
     for (i = 1; i < moveList.length - 1; i++) {
       let item = document.getElementById(moveList[i].toString() + "-move");
       if (item != null) {
@@ -697,7 +740,8 @@ function goDungeon(button) {
     /*for (i = 1; i < 5; i++) { ! MAKE COLORS TURN OFF
       document.getElementById("move-" + i).classList.toggle(returnMoveColor(moveList[i]));
     }*/
-
+    
+    hp = char.hp;
     diceRoller(); 
     updateUI();
   }
@@ -721,36 +765,34 @@ function hideMe(item) {
   item.classList.toggle("hidden");
 }
 
-function description(id) { //automatic descriptions
+function description(id) { //automatic descriptions + enemie descriptions
   switch (id) {
       case "AA-move":
         charlistDescription.innerHTML = "really powerful move. <br>dmg: d6";
-        selectAnimation("AA", "mouseEnter");
         break;
       case "CA+-move":
         charlistDescription.innerHTML = "less powerful move. <br>dmg: 2";
-        selectAnimation("CA+", "mouseEnter");
         break;
       case "CA-move":
         charlistDescription.innerHTML = "less less powerful move. <br>dmg: 1";
-        selectAnimation("CA", "mouseEnter");
         break;
       case "CAR":
-        charlistDescription.innerHTML = "lightsaber like knife";
-        selectAnimation("CAR", "mouseEnter");
-        selectAnimation("AA", "mouseEnter");
+        charlistDescription.innerHTML = "lightsaber like knife <br> possible moves: AA";
         break;
       case "AAR":
-        charlistDescription.innerHTML = "short gun for xptional marksmans, u know";
-        selectAnimation("AAR", "mouseEnter");
-        selectAnimation("CA+", "mouseEnter");
-        selectAnimation("CA", "mouseEnter");
+        charlistDescription.innerHTML = "short gun for xptional marksmans, u know <br> possible moves: CA+, CA";
         break;
       case "energetic":
         charlistDescription.innerHTML = "a lot of energy in this legs and mind. and above legs also.";
         break;
       case "sanchin":
         charlistDescription.innerHTML = "ancient samurai breathing technique, that heals your mental health (smoking doesn't by the way).";
+        break;
+      case "sousid":
+        charlistDescription.innerHTML = "<b>sousid</b><br>spider-like guy next door";
+        break;
+      case "sus":
+        charlistDescription.innerHTML = "<b>sus</b><br>sus";
         break;
     case "standart":
       selectAnimation("", "mouseLeave");
@@ -840,6 +882,9 @@ function updateUI() {
   for (i = 0; i < 3; i++) {
     document.getElementById("REQcharacter-" + i).innerHTML = document.getElementById("character-" + i).innerHTML;
   }
+
+  if (rollResources.biohazard < 0) { rollResources.biohazard = 0; } 
+  else if (rollResources.deadbones < 0) { rollResources.deadbones = 0; }
 }
 
 function returnMoveColor(move) {
@@ -888,14 +933,20 @@ function random(min, max) {
   return Math.floor(Math.random() * (max - min) ) + min;
 }
 
-function chance(min, max) {
-  let ran = random(0, 100);
-  console.log(ran + " - seed");
+function frandom(min, max, pt) {
+  return (Math.random() * (max - min) + min).toFixed(pt);
+}
+
+function chance(min, max) { //weird distribution
   let check = max;
+  let ran = frandom(((1 / check) * 1000).toFixed(2) - 1, 100);
 
   while (true) {
-  console.log ((1 / check) * 100 + " for number " + check);
-    if ((1 / check) * 100 >= ran) {
+    if (((1 / check) * 100).toFixed(2) >= ran) {
+      if (check < min) {
+        check = min;
+      }
+      
       return check;
     }
     else {
