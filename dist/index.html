@@ -8,8 +8,9 @@
     <script src="scripts.js"></script>
 </head>
 <body class="left-0 right-0 overflow-hidden`">
-    <div id="big-text" onclick="hideMe(event.target)" class="fixed z-10 text-3xl bg-green-200 dark:bg-red-200 hover:cursor-pointer hidden" style="top: 40%; left: 50%; transform: translate(-50%, -50%);">
-        you suck
+    <div id="big-text" onclick="hideMe(document.getElementById('big-text'))" class="fixed z-10 text-3xl bg-green-200 dark:bg-red-200 hover:cursor-pointer hidden" style="top: 40%; left: 50%; transform: translate(-50%, -50%);">
+        <span>you suck</span> <br>
+        <span class="text-lg">final score: 1000 [S]</span>
     </div>
     <div id="biginfobox" onclick="hideMe(event.target)" class="w-96 h-96 fixed border-2 standard-border border-dashed bg-white hover:cursor-pointer p-6 hidden" style="left: 50%; top: 50%; margin-top: -200px; margin-left: -150px; ">
         <div>YEAH</div>
@@ -18,7 +19,12 @@
         <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex flex-col justify-center items-center">
             <button id="start-button" onclick="goDungeon(this)" class="bg-gray-300 border-2 standard-border p-2 block col-span-3 row-span-3 w-12 h-12">start</button>
             <div class="hidden" id="dungeon-wrapper">
-                <button id="retreat" onclick="retreat()">🏃🏻‍♀️ retreat</button>
+                <div class="flex">
+                    <button id="retreat" onclick="retreat()">🏃🏻‍♀️ retreat</button>
+                    <div id="player-effects" class="ml-4 pl-72">
+                    </div>
+                </div>
+                    
                 <div id="enemy-hud" class="flex flex-col justify-center h-48 items-center border-gray-500 border-2 border-dotted">
                     <div id="encounter-pfp" class="text-6xl relative font-light hover:cursor-help group" onmouseover="description(currentEncounter.name)" onmouseleave="description('standart')">
                         #

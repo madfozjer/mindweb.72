@@ -2,11 +2,11 @@
 var sousid = 
 {
   name: "sousid",
-  move: "CA+",
+  move: "BD",
   image: "#",
   basehp: 8,
   hp: 8,
-  value: 2,
+  value: 0.5,
   rollResources: 
   {
     biohazard: 4,
@@ -14,38 +14,19 @@ var sousid =
   }
 }
 
-var sus = 
+var sus = //vachta 
 {
   name: "sus",
   move: "CA+",
   image: "$",
   basehp: 10,
   hp: 10,
-  value: 1,
+  value: 0.25,
   rollResources: 
   {
     biohazard: 0,
     deadbones: 5
   }
-}
-
-//generate characters 
-var alex = 
-{
-  name: "alex",
-  moveList: ["", "AA", "CA+", ""],
-  gunList: ["", "CAR", "AAR"],
-  genes: ["", "energetic"],
-  resources: { biohazard: 0, deadbones: 3}
-}
-
-var carlos = 
-{
-  name: "carlos",
-  moveList: ["", "AA", ""],
-  gunList: ["", "CAR", ""],
-  genes: ["", "empty"],
-  resources: { biohazard: 3, deadbones: 1}
 }
 
 /*ui*/
@@ -85,19 +66,21 @@ var damageReceived = 0;
 var charID = 0;
 var backup;
 var hp = 0;
+var overHP = 0;
+var effects = {
+  shield: 0
+}
+var score = 0;
+var regCount = 0;
 
 /*lists*/
 var moveList = [""]
 var gunList= [""]
 var encounterList = [];
-var possibleEncounters = [sousid, sus, sus];
+var possibleEncounters = [sousid/*, sus, sus*/];
 var genesList = [];
 var buildingList = ["", "HR", "REQ"];
 var charList = [];
-var possibleChars = { //test
-  biohazard: [alex],
-  deadbones: [carlos]
-}
 var resources = {
   coins: 3
 };
@@ -114,8 +97,8 @@ var resourcesUI = {
 }
 var characters = [""];
 const possibleGuns = {
-  CAR: ["AA"],
-  AAR: ["CA+", "CA"]
+  BAB: ["BD", "BD", "BD", "BD", "RB"], //re-balance RB
+  PUN: ["CB", "CB", "JB"]
 }
 
 /*char generator*/
@@ -127,11 +110,11 @@ const  characterGenerator = {
 
   returnGun(type) { 
     if (type == "biohazard") {
-      let list = ["CAR"];
+      let list = ["BAB"];
       return list[random(0, list.length)];
     }
     else if (type = "deadbones") {
-      let list = ["AAR"];
+      let list = ["PUN"];
       return list[random(0, list.length)];
     }
   },
@@ -218,7 +201,7 @@ window.onload = function() {
 /*game master*/
 function nextEncounter() {
   if (encounterID <= encounterList.length - 1) {
-   resources.coins += currentEncounter.value;
+   resources.coins += Math.floor(currentEncounter.value + diffuclty);
    currentEncounter = encounterList[encounterID - 1];
    diffuclty++;
    encounterID++
@@ -234,19 +217,19 @@ function nextEncounter() {
 function win() {
   updateUI();
   resources.coins += diffuclty;
-  let text;
-  text = document.getElementById("big-text");
-  text.innerHTML = "you won";
+  let text = document.getElementById("big-text");
   text.classList.toggle("hidden");
+  text.innerHTML = `<span>you won</span> <br>
+  <span class="text-lg">final score: ` + score + " " + `[` + finalScore() + `]`+ `</span>`;
   goDungeon();
 }
 
 function lost() {
-  let text;
-  text = document.getElementById("big-text");
-  text.innerHTML = "you lost";
-  text.classList.toggle("hidden");
+  let text = document.getElementById("big-text");
   text.classList.toggle("dark");
+  text.classList.toggle("hidden");
+  text.innerHTML = `<span>you lost</span> <br>
+  <span class="text-lg">final score: ` + score + " " + `[` + finalScore() + `]`+ `</span>`;
   goDungeon();
   encounterID = 1;
   diffuculty = 1;
@@ -255,12 +238,19 @@ function lost() {
   let item = document.getElementById("character-" + charID);
   item.innerHTML = ""; item.removeAttribute("title");
   charID = -1;
+  resources.coins = 0;
   turnOffMoveUI();
   updateUI();
 }
 
 function retreat() {
-  goDungeon();
+  let text = document.getElementById("big-text");
+  text.classList.toggle("hidden");
+  text.innerHTML = `you've retreated <br>
+  <span class="text-lg">final score: ` + score + " " + `[` + finalScore() + `]`+ `</span>`;
+  goDungeon();  
+  resources.coins -= Math.floor(resources.coins / 2);
+  updateUI();
   char.hp = hp;
   encounterID = 1;
   diffuclty = 1;
@@ -312,8 +302,9 @@ function sendMoves() {
   for (i = 1; i < genes.length; i++) {
     genetics(genes[i], "post");
   }
-
+  
   damageDealtUI.innerHTML = "-" + damageDealt;
+  effect("post");
   encounterMove(); //TODO await/async implementation
   turnEnd();
   diceRoller();
@@ -333,23 +324,23 @@ function diceRoller() {
 function diceRoll() {  // 21 = 6; 19,20 = 5; 16,17,18 = 4; 12,13,14,15 = 3; 7,8,9,10,11 = 2; 1,2,3,4,5,6 = 1
   var seed = random(1, 21);
 
-  if (seed < 7) {
+  if (seed <= 7) {
     return 1;
   }
   
-  if (seed > 6 && seed < 12) {
+  if (seed >= 8 && seed < 12) {
     return 2;
   }
 
-  if (seed > 11 && seed < 16) {
+  if (seed >= 12 && seed < 16) {
     return 3;
   }
 
-  if (seed > 15 && seed < 19) {
+  if (seed >= 16 && seed < 19) {
     return 4;
   }
 
-  if (seed > 18 && seed < 21) {
+  if (seed >= 19 && seed < 21) {
     return 5;
   }
 
@@ -492,7 +483,6 @@ function reqSlot(id) {
   if (isSavingREQ && isSavingREQ != undefined) {
     char = rolledChar;
     rollResources.biohazard -= rolledChar.resources.biohazard * 10;
-    console.log(rolledChar.resources.biohazard);
     rollResources.deadbones -= rolledChar.resources.deadbones * 10;
     if (rollResources.biohazard < 0) { rollResources.biohazard = 0; } 
     else if (rollResources.deadbones < 0) { rollResources.deadbones = 0; }
@@ -587,7 +577,7 @@ function generateCharacter() {
   let Resources = {biohazard: 0, deadbones: 0 };
   let ran = random(1, 10);
 
-  let n = chance(2, 4); gunlist.length = n;
+  let n = chance(2, 5); gunlist.length = n;
   for (i = 1; i < n; i++) {
     let type = (ran > biohazard) ? "biohazard" : "deadbones";
     gunlist[i] = characterGenerator.returnGun(type);
@@ -604,7 +594,7 @@ function generateCharacter() {
     }
   }
 
-  n = chance(2, 5);
+  n = chance(2, 4);
   movelist = []; movelist.length = n;
   for (i = 1; i < gunlist.length; i++) {
     for (a = 1; a < n; a++) {
@@ -644,13 +634,22 @@ function generateCharacter() {
 /*encounter side*/
 function moveReceiver(move, receiver, index) { //automatic moves code
   if (receiver == currentEncounter) {
+    let random;
     switch (move) {
-      case "AA-move":
-        let random = diceValues[index];
+      case "BD-move":
+        random = diceValues[index];
         receiver.hp -= random;
         damageDealt += random;
         break;
-      case "CA+-move":
+      case "RB-move":
+        random = diceValues[index];
+        receiver.hp -= reverse(random);
+        damageDealt += reverse(random);
+        break;
+      case "CB-move":
+        effects.shield += diceValues[index];
+        break;
+      case "JB-move":
         receiver.hp -= 2;
         damageDealt += 2;
         break;
@@ -662,21 +661,36 @@ function moveReceiver(move, receiver, index) { //automatic moves code
         console.log("move receiver error");
     } 
   }
-  else if (receiver == "player") {
+  else if (receiver == "player") { //change it
+    let dmg = 0;
     switch (move) {
-      case "AA":
-        let random = random(1, 3)
-        hp -= random;
-        damageReceived += random;
+      case "BD":
+        let ran = diceValues[random(2,5)];
+        dmg = ran - overHP; 
+        if (dmg < 0) { dmg = 0; }
+        hp -= dmg;
+        damageReceived += dmg;
         break;
-      case "CA+":
-        hp -= 2; hp
-        damageReceived += 2;
+      case "JB":
+        dmg = 2 - overHP; 
+        if (dmg < 0) { dmg = 0; }
+        hp -= dmg;
+        damageReceived += dmg;
         break;
       default:
         console.log("move receiver error");
     } 
   }
+}
+
+function reverse(n) {
+  if (n == 6) { return 1 }
+  else if (n == 5) { return 1; }
+  else if (n == 4) { return 2; }
+  else if (n == 3) { return 2; }
+  else if (n == 2) { return 3; }
+  else if (n == 1) { return 3; }
+  else if (n >= 7) { return 0; }
 }
 
 function turnEnd() {
@@ -689,18 +703,32 @@ function turnEnd() {
     updateUI();
     endEncounter();
   }
+
+  score -= damageReceived * 15;
 }
 
 function endEncounter() {
+  score += diffuclty * 100;
+  console.log(score);
   nextEncounter();
+  effect("pre");
 }
 
 function encounterMove() {
   moveReceiver(currentEncounter.move, "player");
   damageReceivedUI.innerHTML = "-" + damageReceived;
+  score -= 25;
+  regCount++;
 
-  if (hp <= 0)
+  if (regCount == 3) {
+    currentEncounter.hp += diffuclty;
+    regCount = 0;
+  }
+
+  if (hp <= 0) {
     lost();
+    regCount = 0;
+  }
 }
 
 /*ui manipulation*/
@@ -767,29 +795,32 @@ function hideMe(item) {
 
 function description(id) { //automatic descriptions + enemie descriptions
   switch (id) {
-      case "AA-move":
-        charlistDescription.innerHTML = "really powerful move. <br>dmg: d6";
+      case "BD-move":
+        charlistDescription.innerHTML = "<b>bat drive!</b><br> ultimate head smashing move <br>dmg: d6";
         break;
-      case "CA+-move":
-        charlistDescription.innerHTML = "less powerful move. <br>dmg: 2";
+      case "JB-move":
+        charlistDescription.innerHTML = "<b>jawbreak</b><br>straight jawbreak and out. <br>dmg: 2";
         break;
-      case "CA-move":
-        charlistDescription.innerHTML = "less less powerful move. <br>dmg: 1";
+      case "RB-move":
+        charlistDescription.innerHTML = "<b>reverse bat</b><br> pull back and strike this bones <br>dmg: reverse d6";
         break;
-      case "CAR":
-        charlistDescription.innerHTML = "lightsaber like knife <br> possible moves: AA";
+      case "CB-move":
+        charlistDescription.innerHTML = "<b>BREEEEZE and fight it</b><br> push enemies back and thrive <br>effect: shield <d6>";
         break;
-      case "AAR":
-        charlistDescription.innerHTML = "short gun for xptional marksmans, u know <br> possible moves: CA+, CA";
+      case "BAB":
+        charlistDescription.innerHTML = "<b>basketball bat</b><br>bone crushing bonk stick <br> possible moves: BD";
+        break;
+      case "PUN":
+        charlistDescription.innerHTML = "<b>bloody fists</b><br> bandaged fingers flying into monsters chests <br> possible moves: JB, CB";
         break;
       case "energetic":
-        charlistDescription.innerHTML = "a lot of energy in this legs and mind. and above legs also.";
+        charlistDescription.innerHTML = "<b>energetic</b><br>a lot of energy in this legs and mind. and above legs also.";
         break;
       case "sanchin":
-        charlistDescription.innerHTML = "ancient samurai breathing technique, that heals your mental health (smoking doesn't by the way).";
+        charlistDescription.innerHTML = "<b>sanchin</b><br>ancient samurai breathing technique, that heals your lungs.";
         break;
       case "sousid":
-        charlistDescription.innerHTML = "<b>sousid</b><br>spider-like guy next door";
+        charlistDescription.innerHTML = "<b>sousid</b><br>spider-like guy next door.<br>takes your random dice value and dmgs u.";
         break;
       case "sus":
         charlistDescription.innerHTML = "<b>sus</b><br>sus";
@@ -889,12 +920,18 @@ function updateUI() {
 
 function returnMoveColor(move) {
   switch (move) {
-    case "AA":
+    case "BD":
       return "purple";
     case "CA":
       return "red";
     case "CA+":
-      return "darkred";
+      return "darkred"
+    case "RB":
+      return "magenta";
+    case "CB":
+      return "DarkSlateBlue";
+    case "JB":
+      return "ForestGreen";
   }
 }
 
@@ -914,6 +951,20 @@ function genetics(gene, stage) { //oop genes
         hp += 1;
         break;
     }
+  }
+}
+
+function effect(mode) {
+  if ("pre") {
+    let div = document.getElementById("player-effects");
+    overHP = 0;
+    if (effects.shield < 0) { effects.shield = 0; }
+    div.innerHTML = "";
+    if (effects.shield > 0) { div.innerHTML += `<span title="shield" class="cursor-pointer">` + effects.shield + `🔰` + `<span>`; }
+  }
+  if ("post") {
+    overHP += effects.shield;
+    if (effects.shield > 0) { effects.shield -= 6; }
   }
 }
 
@@ -952,5 +1003,37 @@ function chance(min, max) { //weird distribution
     else {
       check--;
     }
+  }
+}
+
+function finalScore() {
+  let idealScore = 0;
+
+  for (i = 0; i < encounterList.length; i++) {
+    idealScore += 100 * i;
+  }
+
+  let percentage = (score / idealScore) * 100;
+
+  if (percentage == 100) {
+    return "GOAT"
+  }
+  else if (percentage > 95) {
+    return "SS";
+  }
+  else if (percentage > 85) {
+    return "S";
+  }
+  else if (percentage > 75) {
+    return "A";
+  }
+  else if (percentage > 50) {
+    return "B";
+  }
+  else if (percentage >= 25) {
+    return "C";
+  }
+  else if (percentage < 25) {
+    return "F";
   }
 }
