@@ -14,14 +14,14 @@ var sousid =
   }
 }
 
-var sus = //vachta 
+var vachta = 
 {
-  name: "sus",
-  move: "CA+",
-  image: "$",
-  basehp: 10,
-  hp: 10,
-  value: 0.25,
+  name: "vachta",
+  move: "CC",
+  image: "&",
+  basehp: 6,
+  hp: 6,
+  value: 0.75,
   rollResources: 
   {
     biohazard: 0,
@@ -53,7 +53,7 @@ var damageReceivedUI;
 /*current state*/
 var diffuclty = 1;
 var encounterID = 1;
-var currentEncounter; 
+var currentEncounter = {}; 
 var moves = [];
 var diceValues = [];
 var inDungeon = false;
@@ -68,16 +68,18 @@ var backup;
 var hp = 0;
 var overHP = 0;
 var effects = {
-  shield: 0
+  shield: 0,
+  hothand: 0,
+  curse: 0
 }
 var score = 0;
-var regCount = 0;
+var turnsLeft = 16;
 
 /*lists*/
 var moveList = [""]
 var gunList= [""]
 var encounterList = [];
-var possibleEncounters = [sousid/*, sus, sus*/];
+var possibleEncounters = [sousid, sousid, vachta];
 var genesList = [];
 var buildingList = ["", "HR", "REQ"];
 var charList = [];
@@ -100,6 +102,8 @@ const possibleGuns = {
   BAB: ["BD", "BD", "BD", "BD", "RB"], //re-balance RB
   PUN: ["CB", "CB", "JB"]
 }
+
+var cookies = {};
 
 /*char generator*/
 const  characterGenerator = {
@@ -158,10 +162,14 @@ window.onload = function() {
   buildingHR = document.getElementById("HR-building");
   buildingREQ = document.getElementById("REQ-building");
   bigInfo = document.getElementById("biginfobox");
-  currentEncounter = encounterList[encounterID];
   rollREQbutton =  document.getElementById("roll-REQ");
   buildingItems.length = 10;
   buildingList.length = 10;
+  currentEncounter = encounterList[encounterID];
+  currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty * 3);
+  encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
+  encounterHUD.image.innerHTML = currentEncounter.image;
+  encounterHUD.name.innerHTML = currentEncounter.name;
   currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
   encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
   resourcesUI.coins = document.getElementById('coins'); resourcesUI.coins.innerHTML = "@" + resources.coins;
@@ -169,6 +177,10 @@ window.onload = function() {
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
   damageDealtUI = document.getElementById("damage-dealt");
   damageReceivedUI = document.getElementById("damage-received");
+  var cookie = document.cookie.split(';').map(cookie => cookie.split('=')).reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: decodeURIComponent(value) }), {});
+  cookies = cookie;
+  resources.coins = cookies.coins;
+  updateUI();
   
   for (i = 1; i < charlistItems.length; i++) {
     charlistItems[i] = document.getElementById("item-" + i);
@@ -201,12 +213,13 @@ window.onload = function() {
 /*game master*/
 function nextEncounter() {
   if (encounterID <= encounterList.length - 1) {
+   console.log(encounterID + "/" + encounterList.length);
    resources.coins += Math.floor(currentEncounter.value + diffuclty);
-   currentEncounter = encounterList[encounterID - 1];
+   currentEncounter = encounterList[encounterID];
    diffuclty++;
    encounterID++
    updateUI();
-   currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty);
+   currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty * 3);
    encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
    encounterHUD.image.innerHTML = currentEncounter.image;
    encounterHUD.name.innerHTML = currentEncounter.name;
@@ -216,11 +229,13 @@ function nextEncounter() {
 
 function win() {
   updateUI();
+  score += 2000;
   resources.coins += diffuclty;
   let text = document.getElementById("big-text");
   text.classList.toggle("hidden");
+  let scr = finalScore();
   text.innerHTML = `<span>you won</span> <br>
-  <span class="text-lg">final score: ` + score + " " + `[` + finalScore() + `]`+ `</span>`;
+  <span class="text-lg">final score: ` + scr[0] + " " + `[` + scr[1] + `]`+ `</span>`;
   goDungeon();
 }
 
@@ -228,8 +243,12 @@ function lost() {
   let text = document.getElementById("big-text");
   text.classList.toggle("dark");
   text.classList.toggle("hidden");
+  let scr = finalScore();
+  effects.hothand = 0;
+  effects.curse = 0;
+  effects.shield = 0;
   text.innerHTML = `<span>you lost</span> <br>
-  <span class="text-lg">final score: ` + score + " " + `[` + finalScore() + `]`+ `</span>`;
+  <span class="text-lg">final score: ` + scr[0] + " " + `[` + scr[1] + `]`+ `</span>`;
   goDungeon();
   encounterID = 1;
   diffuculty = 1;
@@ -239,6 +258,7 @@ function lost() {
   item.innerHTML = ""; item.removeAttribute("title");
   charID = -1;
   resources.coins = 0;
+  if (resources.coins < 1) { resources.coins = 1; }
   turnOffMoveUI();
   updateUI();
 }
@@ -246,8 +266,7 @@ function lost() {
 function retreat() {
   let text = document.getElementById("big-text");
   text.classList.toggle("hidden");
-  text.innerHTML = `you've retreated <br>
-  <span class="text-lg">final score: ` + score + " " + `[` + finalScore() + `]`+ `</span>`;
+  text.innerHTML = `you've retreated`;
   goDungeon();  
   resources.coins -= Math.floor(resources.coins / 2);
   updateUI();
@@ -277,14 +296,16 @@ function drop(ev) {
 
 function setSlotColor(move, slot) {
   var index = moveList.indexOf(move.substr(0, move.length - 5));
-  slot.style.color = returnMoveColor(moveList[index]);
+  slot.style.backgroundColor = returnMoveColor(moveList[index]);
+  slot.style.color = "white";
 }
 
 function removeMove(id) {
   if (moves[id] != null) {
     moves[id] = null;
     let slot = document.getElementById("move-" + id);
-    slot.style.color = "#0c0c0c";
+    slot.style.backgroundColor = "white";
+    slot.style.color = "#4B5563";
   }
 }
 
@@ -292,6 +313,7 @@ function sendMoves() {
   damageDealt = 0;
   damageReceived = 0;
 
+  console.log("===========");
   for (var i = 1; i < moves.length; i++)
   {
     if (moves[i] != undefined) {
@@ -304,7 +326,7 @@ function sendMoves() {
   }
   
   damageDealtUI.innerHTML = "-" + damageDealt;
-  effect("post");
+  effect("pre");
   encounterMove(); //TODO await/async implementation
   turnEnd();
   diceRoller();
@@ -449,8 +471,10 @@ function characterChoose(Char, mode, id) {
         let namePreview = document.getElementById("name-preview");
         namePreview.innerHTML = `<span class="text-purple-400 font-semibold">your name:</span> ` + rolledChar.name + ``;
         hpPreview.innerHTML = `<span class="text-red-400 font-semibold">your hp:</span> ` + rolledChar.hp + ``;
-        hpPreview.classList.toggle("hidden");
-        namePreview.classList.toggle("hidden");
+        if (hpPreview.classList.contains("hidden")) {
+          hpPreview.classList.toggle("hidden");
+          namePreview.classList.toggle("hidden");
+        }
         document.getElementById("delete-REQ").classList.toggle("hidden");
         document.getElementById("save-REQ").classList.toggle("hidden");
       }
@@ -532,6 +556,10 @@ function rollREQ() {
     document.getElementById("REQ-preview").innerHTML = rolledChar.name.substring(0, 1).toUpperCase();
     document.getElementById("REQ-preview").title = rolledChar.name.charAt(0).toLowerCase() + rolledChar.name.slice(1);  
     characterChoose(rolledChar, 'preview');
+    if (document.getElementById("name-preview").classList.contains("hidden")) { //rewrite it
+      document.getElementById("name-preview").classList.toggle("hidden");
+      document.getElementById("hp-preview").classList.toggle("hidden");
+    }
     isPreviewingREQ = true; 
   }
 }
@@ -639,23 +667,25 @@ function moveReceiver(move, receiver, index) { //automatic moves code
       case "BD-move":
         random = diceValues[index];
         receiver.hp -= random;
+        console.log(random + " - your damage");
         damageDealt += random;
         break;
       case "RB-move":
         random = diceValues[index];
         receiver.hp -= reverse(random);
+        console.log(reverse(random) + " - your damage");
         damageDealt += reverse(random);
         break;
       case "CB-move":
         effects.shield += diceValues[index];
+        console.log(diceValues[index] + " - your add shield");
         break;
       case "JB-move":
-        receiver.hp -= 2;
-        damageDealt += 2;
-        break;
-      case "CA-move":
-        receiver.hp--;
-        damageDealt++;
+        let dmg = 1 + effects.hothand;
+        if (diceValues[index] > 3 && diceValues[index] < 7) { effects.hothand++; }
+        console.log(dmg + " - your damage");
+        receiver.hp -= dmg;
+        damageDealt += dmg;
         break;
       default:
         console.log("move receiver error");
@@ -668,14 +698,18 @@ function moveReceiver(move, receiver, index) { //automatic moves code
         let ran = diceValues[random(2,5)];
         dmg = ran - overHP; 
         if (dmg < 0) { dmg = 0; }
+        console.log("dmg: " + ran + " overhp: " + overHP);
         hp -= dmg;
         damageReceived += dmg;
         break;
-      case "JB":
-        dmg = 2 - overHP; 
+      case "CC":
+        dmg = (1 + effects.curse) - overHP; 
         if (dmg < 0) { dmg = 0; }
         hp -= dmg;
-        damageReceived += dmg;
+        console.log("dmg: " + (1 + effects.curse) + " overhp: " + overHP);
+        damageReceived += dmg; 
+        effects.curse += damageDealt;
+        if (effects.curse > 0) { document.getElementById("player-effects").innerHTML += `<span title="curse" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart'")>` + effects.curse + `👁️‍🗨️` + `<span>`}
         break;
       default:
         console.log("move receiver error");
@@ -704,36 +738,35 @@ function turnEnd() {
     endEncounter();
   }
 
-  score -= damageReceived * 15;
+  score -= damageReceived * 20;
 }
 
 function endEncounter() {
   score += diffuclty * 100;
-  console.log(score);
+  effects.curse = 0;
   nextEncounter();
-  effect("pre");
+  effect("post");
 }
 
 function encounterMove() {
   moveReceiver(currentEncounter.move, "player");
   damageReceivedUI.innerHTML = "-" + damageReceived;
-  score -= 25;
-  regCount++;
+  turnsLeft--;
+  document.getElementById("turns-left").innerHTML = turnsLeft;
 
-  if (regCount == 3) {
-    currentEncounter.hp += diffuclty;
-    regCount = 0;
-  }
-
-  if (hp <= 0) {
+  if (hp <= 0) 
     lost();
-    regCount = 0;
-  }
+
+  if (turnsLeft < 0) 
+    lost();
 }
 
 /*ui manipulation*/
 function goDungeon(button) {
   if (char != "" && char != undefined) {
+    document.getElementById("player-effects").innerHTML = "";
+    encounterID = 1;
+    removeMove(1); removeMove(2); removeMove(3); removeMove(4);
     document.getElementById("blocker-REQ").classList.toggle("hidden");
     for (i = 1; i < moveList.length - 1; i++) {
       let item = document.getElementById(moveList[i].toString() + "-move");
@@ -751,7 +784,7 @@ function goDungeon(button) {
     dungen.classList.toggle("hidden");
 
     if (!inDungeon) {
-      encounterList = generateEncounters(5);
+      encounterList = generateEncounters(12);
       encounterID = 1;
       currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
       encounterHPbar.innerHT = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
@@ -796,35 +829,44 @@ function hideMe(item) {
 function description(id) { //automatic descriptions + enemie descriptions
   switch (id) {
       case "BD-move":
-        charlistDescription.innerHTML = "<b>bat drive!</b><br> ultimate head smashing move <br>dmg: d6";
+        charlistDescription.innerHTML = "<b>Bat Drive!</b><br> ultimate head smashing move <br>dmg: d6";
         break;
       case "JB-move":
-        charlistDescription.innerHTML = "<b>jawbreak</b><br>straight jawbreak and out. <br>dmg: 2";
+        charlistDescription.innerHTML = "<b>JawBreak</b><br>straight jawbreak and out. <br>dmg: 1 + <span class='text-orange-400 font-bold'>hothand</span>.<br>receive +1🔥 for every 4, 5 and 6";
         break;
       case "RB-move":
-        charlistDescription.innerHTML = "<b>reverse bat</b><br> pull back and strike this bones <br>dmg: reverse d6";
+        charlistDescription.innerHTML = "<b>Reverse Bat</b><br> pull back and strike this bones <br>dmg: reverse d6";
         break;
       case "CB-move":
-        charlistDescription.innerHTML = "<b>BREEEEZE and fight it</b><br> push enemies back and thrive <br>effect: shield <d6>";
+        charlistDescription.innerHTML = "<b>Counter Block</b><br> push enemies back and thrive <br>effect: shield <d6>";
         break;
       case "BAB":
-        charlistDescription.innerHTML = "<b>basketball bat</b><br>bone crushing bonk stick <br> possible moves: BD";
+        charlistDescription.innerHTML = "<b>BASKETBALL BAT</b><br>bone crushing bonk stick <br> possible moves: BD";
         break;
       case "PUN":
-        charlistDescription.innerHTML = "<b>bloody fists</b><br> bandaged fingers flying into monsters chests <br> possible moves: JB, CB";
+        charlistDescription.innerHTML = "<b>BLOODY FISTS</b><br> bandaged fingers flying into monsters chests <br> possible moves: JawBreak, Counter Block";
         break;
       case "energetic":
-        charlistDescription.innerHTML = "<b>energetic</b><br>a lot of energy in this legs and mind. and above legs also.";
+        charlistDescription.innerHTML = "<b>energetic</b><br>a lot of energy in this legs and mind. and between legs also.";
         break;
       case "sanchin":
         charlistDescription.innerHTML = "<b>sanchin</b><br>ancient samurai breathing technique, that heals your lungs.";
         break;
       case "sousid":
-        charlistDescription.innerHTML = "<b>sousid</b><br>spider-like guy next door.<br>takes your random dice value and dmgs u.";
+        charlistDescription.innerHTML = "<b>sousid</b><br>spider-like guy next door.<br>possible moves: Bat Drive!.";
         break;
-      case "sus":
-        charlistDescription.innerHTML = "<b>sus</b><br>sus";
+      case "vachta":
+        charlistDescription.innerHTML = "<b>vachta</b><br>old fat flying granny.<br>possible moves: Cussing Curse.";
         break;
+      case "shield":
+        charlistDescription.innerHTML = "<b>shield</b><br>pretty self-explanatory.";
+        break;
+      case "hothand":
+        charlistDescription.innerHTML = "<b>hothand</b><br>additional damage for some moves, like JawBreak";
+        break;  
+      case "curse":
+        charlistDescription.innerHTML = "<b>curse</b><br>gonna hurt when someone OLD attacks you";
+        break;    
     case "standart":
       selectAnimation("", "mouseLeave");
       charlistDescription.innerHTML = "";
@@ -906,6 +948,7 @@ function toggleBigInfo() {
 function updateUI() {
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + hp;
   resourcesUI.coins.innerHTML = "@" + resources.coins;
+  document.cookie = "coins=" + resources.coins;
   rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
   document.getElementById("progress-bar").innerHTML = encounterID + "/" + encounterList.length;
@@ -958,13 +1001,16 @@ function effect(mode) {
   if ("pre") {
     let div = document.getElementById("player-effects");
     overHP = 0;
-    if (effects.shield < 0) { effects.shield = 0; }
     div.innerHTML = "";
-    if (effects.shield > 0) { div.innerHTML += `<span title="shield" class="cursor-pointer">` + effects.shield + `🔰` + `<span>`; }
+    if (effects.hothand > 0) { div.innerHTML += `<span title="hothand" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart'")>` + effects.hothand + `🔥` + `<span>`}
   }
+
   if ("post") {
+    let div = document.getElementById("player-effects");
     overHP += effects.shield;
+    if (effects.shield > 0) { div.innerHTML += `<span title="shield" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart')">` + effects.shield + `🔰` + `<span>`; }
     if (effects.shield > 0) { effects.shield -= 6; }
+    if (effects.shield < 0) { effects.shield = 0; }
   }
 }
 
@@ -1008,32 +1054,70 @@ function chance(min, max) { //weird distribution
 
 function finalScore() {
   let idealScore = 0;
+  let simDifficulty = 1;
 
-  for (i = 0; i < encounterList.length; i++) {
-    idealScore += 100 * i;
+  for (i = 1; i < encounterList.length; i++) {
+    simDifficulty++; 
+    idealScore += 100 * simDifficulty; 
   }
 
-  let percentage = (score / idealScore) * 100;
+  idealScore += 4 * 150;
+  score += turnsLeft * 150;
+  idealScore += 2000;
+  let percentage = Math.floor((score / idealScore) * 100);
+  if (turnsLeft == 16) { percentage = 0; }
+  console.log(percentage + "%" + " " + score + "/" + idealScore);
 
-  if (percentage == 100) {
-    return "GOAT"
+  if (percentage > 100) {
+    return ["GOAT", score];
   }
   else if (percentage > 95) {
-    return "SS";
+    return ["SS", score];
   }
   else if (percentage > 85) {
-    return "S";
+    return ["S", score];
   }
   else if (percentage > 75) {
-    return "A";
+    return ["A", score];
   }
   else if (percentage > 50) {
-    return "B";
+    return ["B", score];
   }
   else if (percentage >= 25) {
-    return "C";
+    return ["C", score];
   }
   else if (percentage < 25) {
-    return "F";
+    return ["F", score];
+  }
+}
+
+function newSave(content) {
+  var a = document.createElement("a");
+  a.href = window.URL.createObjectURL(new Blob([content], {type: "text/plain"}));
+  let date = new Date();
+  a.download = date.getFullYear() + "" + date.getMonth() + "" + date.getDate() + "" + date.getHours() + "" + date.getMinutes() + "" + date.getSeconds() + ".mw72";
+  a.click(); 
+}
+
+function loadSave() {
+  bigInfo.removeAttribute("onclick");
+  bigInfo.innerHTML = "<input type='file' id='load-file' onchange='readSave(event)'>";
+  bigInfo.classList.toggle("hidden");
+}
+
+function readSave(e) {
+  const input = e.target;
+  const reader = new FileReader();
+  reader.onload = function(){
+    let data = reader.result;
+    data = data.split(';').map(cookie => cookie.split('=')).reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: decodeURIComponent(value) }), {})
+    console.log(data);
+    resources.coins = data.coins;
+    updateUI();
+    bigInfo.setAttribute("onclick","hideMe(event.target)");
+  };
+
+  if (input.files[0]) {
+    reader.readAsText(input.files[0]);
   }
 }

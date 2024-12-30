@@ -13,7 +13,7 @@
         <span class="text-lg">final score: 1000 [S]</span>
     </div>
     <div id="biginfobox" onclick="hideMe(event.target)" class="w-96 h-96 fixed border-2 standard-border border-dashed bg-white hover:cursor-pointer p-6 hidden" style="left: 50%; top: 50%; margin-top: -200px; margin-left: -150px; ">
-        <div>YEAH</div>
+        YEAH
     </div>
     <div id="wrapper" class="grid grid-cols-3 grid-rows-2 w-screen h-screen">
         <div id="dungeon" class="col-start-2 row-span-3 col-span-3 standard-border border-l-2 flex flex-col justify-center items-center">
@@ -47,12 +47,15 @@
                     <div id="damage-received" class="text-red-800">
                         0
                     </div>
+                    <div id="turns-left" class="text-purple-800">
+                        16
+                    </div>
                 </div>
                 <div class="grid grid-cols-5 gap-1">
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(1)" id="move-1" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(2)" id="move-2" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(3)" id="move-3" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
-                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(4)" id="move-4" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-light items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(1)" id="move-1" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-normal text-gray-600 items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(2)" id="move-2" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-normal text-gray-600 items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(3)" id="move-3" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-normal text-gray-600 items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
+                    <div ondragover="allowDrop(event)" ondrop="drop(event)" onclick="removeMove(4)" id="move-4" class="flex border-dotted border-2 standard-border mb-auto w-24 h-24 text-4xl font-normal text-gray-600 items-center justify-center hover:border-solid hover:cursor-pointer">0</div>
                     <button onclick="sendMoves()">send</button>
                 </div>
                 <div id="move-list" class="pl-3"> <!--generate it-->
@@ -145,5 +148,7 @@
             <div id="info" class="inline-block border-2 border-gray-500 h-48 mr-8 ml-7 pl-2 pt-4"></div> <!--responsobility-->
         </div>
     </div>  
+    <div class="absolute top-12 right-10 text-right" style="width: 100px"><a onclick="newSave(document.cookie)" class="hover:cursor-pointer">save</a></div>
+    <div class="absolute top-5 right-10 text-right" style="width: 100px"><a onclick="loadSave(event)" class="hover:cursor-pointer">load</a></div>
 </body>
 </html>
