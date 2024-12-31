@@ -574,40 +574,16 @@ video {
   right: 0px;
 }
 
-.top-0 {
-  top: 0px;
-}
-
 .right-10 {
   right: 2.5rem;
-}
-
-.top-5 {
-  top: 1.25rem;
-}
-
-.right-5 {
-  right: 1.25rem;
-}
-
-.right-8 {
-  right: 2rem;
 }
 
 .top-12 {
   top: 3rem;
 }
 
-.right-3 {
-  right: 0.75rem;
-}
-
-.right-32 {
-  right: 8rem;
-}
-
-.right-64 {
-  right: 16rem;
+.top-5 {
+  top: 1.25rem;
 }
 
 .z-10 {
@@ -894,10 +870,6 @@ video {
 
 .text-right {
   text-align: right;
-}
-
-.align-top {
-  vertical-align: top;
 }
 
 .text-2xl {

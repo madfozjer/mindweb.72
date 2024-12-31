@@ -180,6 +180,40 @@ window.onload = function() {
   var cookie = document.cookie.split(';').map(cookie => cookie.split('=')).reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: decodeURIComponent(value) }), {});
   cookies = cookie;
   resources.coins = cookies.coins;
+  if (atob(cookies.char1) != 'undefined') { charList[0] = JSON.parse(atob(cookies.char1)); } else { charList[0] = ""; }
+  if (atob(cookies.char2) != 'undefined') { charList[1] = JSON.parse(atob(cookies.char2)); } else { charList[1] = ""; }
+  if (atob(cookies.char3) != 'undefined') { charList[2] = JSON.parse(atob(cookies.char3)); } else { charList[2] = ""; }
+
+  if (atob(cookies.char1) != '""') { 
+    charList[0] = JSON.parse(atob(cookies.char1)); 
+    let itemHR = document.getElementById("character-0"); 
+    itemHR.innerHTML = charList[0].name.substring(0, 1).toUpperCase();
+    itemHR.title = charList[0].name;
+  } 
+  else { 
+    charList[0] = ""; 
+  }
+
+  if (atob(cookies.char2) != '""') { 
+    charList[1] = JSON.parse(atob(cookies.char2)); 
+    let itemHR = document.getElementById("character-1"); 
+    itemHR.innerHTML = charList[1].name.substring(0, 1).toUpperCase();
+    itemHR.title = charList[1].name;
+  } 
+  else { 
+    charList[1] = ""; 
+  }
+
+  if (atob(cookies.char3) != '""') { 
+    charList[2] = JSON.parse(atob(cookies.char3)); 
+    let itemHR = document.getElementById("character-2"); 
+    itemHR.innerHTML = charList[2].name.substring(0, 1).toUpperCase();
+    itemHR.title = charList[2].name;
+  } 
+  else { 
+    charList[2] = ""; 
+  }
+
   updateUI();
   
   for (i = 1; i < charlistItems.length; i++) {
@@ -427,13 +461,15 @@ function characterChoose(Char, mode, id) {
         let hpPreview = document.getElementById("hp-preview");
         let namePreview = document.getElementById("name-preview");
         hp = char.hp;
-        namePreview.innerHTML = `<span class="text-purple-400 font-semibold">your name:</span> ` + char.name + ``;
-        hpPreview.innerHTML = `<span class="text-red-400 font-semibold">your hp:</span> ` + hp + ``;
-        hpPreview.classList.toggle("hidden");
-        namePreview.classList.toggle("hidden");
+        if (namePreview.classList.contains('hidden')) {
+          namePreview.innerHTML = `<span class="text-purple-400 font-semibold">your name:</span> ` + char.name + ``;
+          hpPreview.innerHTML = `<span class="text-red-400 font-semibold">your hp:</span> ` + hp + ``;
+          hpPreview.classList.toggle("hidden");
+          namePreview.classList.toggle("hidden");
+        }
       }
 
-      if (mode == "preview") { //rewrite preview to be only visual
+      if (mode == "preview") {
         for (i = 1; i < rolledChar.moveList.length; i++) { 
           if (rolledChar.moveList[i] != undefined || rolledChar.moveList[i] != "") {
             charlistItems[i].innerHTML = rolledChar.moveList[i];
@@ -952,6 +988,9 @@ function updateUI() {
   rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
   document.getElementById("progress-bar").innerHTML = encounterID + "/" + encounterList.length;
+  document.cookie = "char1=" + btoa(JSON.stringify(charList[0])); 
+  document.cookie = "char2=" + btoa(JSON.stringify(charList[1])); 
+  document.cookie = "char3=" + btoa(JSON.stringify(charList[2])); 
 
   for (i = 0; i < 3; i++) {
     document.getElementById("REQcharacter-" + i).innerHTML = document.getElementById("character-" + i).innerHTML;
@@ -1092,7 +1131,7 @@ function finalScore() {
 }
 
 function newSave(content) {
-  var a = document.createElement("a");
+  var a = document.createElement("a");  
   a.href = window.URL.createObjectURL(new Blob([content], {type: "text/plain"}));
   let date = new Date();
   a.download = date.getFullYear() + "" + date.getMonth() + "" + date.getDate() + "" + date.getHours() + "" + date.getMinutes() + "" + date.getSeconds() + ".mw72";
@@ -1113,6 +1152,46 @@ function readSave(e) {
     data = data.split(';').map(cookie => cookie.split('=')).reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: decodeURIComponent(value) }), {})
     console.log(data);
     resources.coins = data.coins;
+
+    if (atob(data.char1) != '""') { 
+      charList[0] = JSON.parse(atob(data.char1)); 
+      let itemHR = document.getElementById("character-0"); 
+      itemHR.innerHTML = charList[0].name.substring(0, 1).toUpperCase();
+      itemHR.title = charList[0].name;
+    } 
+    else { 
+      charList[0] = ""; 
+      let itemHR = document.getElementById("character-0"); 
+      itemHR.innerHTML = "";
+      itemHR.title = ""; 
+    }
+
+    if (atob(data.char2) != '""') { 
+      charList[1] = JSON.parse(atob(data.char2)); 
+      let itemHR = document.getElementById("character-1"); 
+      itemHR.innerHTML = charList[1].name.substring(0, 1).toUpperCase();
+      itemHR.title = charList[1].name;
+    } 
+    else { 
+      charList[1] = ""; 
+      let itemHR = document.getElementById("character-1"); 
+      itemHR.innerHTML = "";
+      itemHR.title = ""; 
+    }
+
+    if (atob(data.char3) != '""') { 
+      charList[2] = JSON.parse(atob(data.char3)); 
+      let itemHR = document.getElementById("character-2"); 
+      itemHR.innerHTML = charList[2].name.substring(0, 1).toUpperCase();
+      itemHR.title = charList[2].name;
+    } 
+    else { 
+      charList[2] = "";
+      let itemHR = document.getElementById("character-2"); 
+      itemHR.innerHTML = "";
+      itemHR.title = ""; 
+    }
+
     updateUI();
     bigInfo.setAttribute("onclick","hideMe(event.target)");
   };
