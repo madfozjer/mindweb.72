@@ -88,7 +88,7 @@
             <div id="REQ-building" class="flex hidden row-span-3 col-span-3 border-2 justify-center border-dotted standard-border">
                 <button title="REQ" onclick="building(this.title)" class="block h-8 text-red-500 pl-2 mr-auto">x</button>
                 <div class="w-ful block self-center mr-auto">
-                    <h3 class="text-3xl">Recureitment Office</h3>
+                    <h3 class="text-3xl">Recruitment Office</h3>
                     <div class="text-sm italic hidden" id="blocker-REQ">blocked</div>
                     <div class="flex justify-center"> <!--do shi-->
                         <div id="REQcharacter-0" onclick="reqSlot(0)" class="flex border-dotted border-2 standard-border mb-auto w-12 h-12 text-2xl font-light items-center justify-center hover:border-solid hover:cursor-pointer"></div>
@@ -111,7 +111,7 @@
                 </div>
             </div>
             <div id="resources" class="text-xl flex gap-3">
-                <div id="coins">@3</div>
+                <div id="coins" onmouseover="description(event.target.title)" onmouseleave="description('standart')" class="hover:cursor-pointer" title="coins">@3</div>
             </div>
         </div>
         <div id="charlist" class="flex flex-col col-start-1 justify-end row-span-1 col-span-1 mb-6 gap-6 standard-border">
@@ -149,6 +149,7 @@
         </div>
     </div>  
     <div class="absolute top-12 right-10 text-right" style="width: 100px"><a onclick="newSave(document.cookie)" class="hover:cursor-pointer">save</a></div>
-    <div class="absolute top-5 right-10 text-right" style="width: 100px"><a onclick="loadSave(event)" class="hover:cursor-pointer">load</a></div>
+    <div class="absolute top-6 right-10 text-right" style="width: 100px"><a onclick="loadSave(event)" class="hover:cursor-pointer">load</a></div>
+    <div class="absolute top-0 right-10 text-right" style="width: 100px"><a onclick="manual()" class="hover:cursor-pointer">manual</a></div>
 </body>
 </html>

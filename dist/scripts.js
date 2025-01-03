@@ -99,7 +99,7 @@ var resourcesUI = {
 }
 var characters = [""];
 const possibleGuns = {
-  BAB: ["BD", "BD", "BD", "BD", "RB"], //re-balance RB
+  BAB: ["BD", "BD", "BD", "BD", "ID"], 
   PUN: ["CB", "CB", "JB"]
 }
 
@@ -108,7 +108,19 @@ var cookies = {};
 /*char generator*/
 const  characterGenerator = {
   returnRandomName() {
-    let nameList = ["aliona", "sasha", "sanìa", "nastia", "dimon", "kirucha", "yasya", "andruha", "tioma", "dasha", "hanya", "inga", "olia"]
+    let nameList = ['alisa', 'hanna', 'maksim', 'mark', 'misha', 'anna', 'sofia', 'vika', 
+      'karolina', 'julia', 'kuba', 'jan', 'toma', 'matyas', 'adam', 'filip', 'vojtech', 
+      'luka', 'martin', 'mati', 'mia', 'lenna', 'marta', 'oskar', 'seba', 'hugo', 'rob', 'david', 'aaron', 
+      'lucija', 'nika', 'rita', 'marta', 'ana', 'dora', 'jakov', 'ivan', 'roko', 'petar', 'fran', 'josip', 
+      'zoe', 'boglarka', 'lili', 'levente', 'dominik', 'noel', 'marcell', 'zlatan', 'kamile', 'gabi', 'patricija', 
+      'benas', 'dom', 'herkus', 'paula', 'dari', 'karl', 'kirilo', 'nastia', 'anastasi', 'eva', 'evelina', 
+      'bodia', 'bogdan', 'damian', 'artiom', 'ion', 'jana', 'mila', 'bisera', 'sara', 'jovana', 'miha', 'petar', 
+      'petro', 'pit', 'stefan', 'zuza', 'pola', 'antoni', 'antek', 'aleksander', 'stanislauw', 'szimek', 
+      'martin', 'riszard', 'ajda', 'lana', 'nik', 'liam', 'tim', 'lovro', 'zhan', 'ola', 'yeva', 'artem', 
+      'dmytro', 'dimitri', 'dania', 'andre', 'andriy', 'nikol', 'yoana', 'dragana', 'gabriela', 'simona', 
+      'simon', 'georgi', 'kaloyan', 'boris', 'teodor', 'mariami', 'nino', 'barbare', 'nutsa', 'sesili', 
+      'aylin', 'medina', 'asilim', 'aysa', 'amina', 'tomyris', 'aisultan', 'nurislam', 'aldiyar', 'amir', 
+      'alinur', 'ali', 'omar', 'ramazan', 'muhammed'];
     return nameList[random(0, nameList.length)];
   },
 
@@ -139,12 +151,12 @@ const  characterGenerator = {
   },
 
   returnGene(type) {
-    if (type == "biohazard") {
-      let list = ["empty", "empty", "energetic"]  //rewrite like this { empty: 99, energetic: 1 } out of 100
+    if (type == "biohazard") { //3 empty, 2 energetic, 1 egalite
+      let list = ["empty", "empty", "energetic", 'energetic', 'egalite']  //rewrite like this { empty: 99, energetic: 1 } out of 100
       return list[random(0, list.length)];
     }
     else if (type == "deadbones") {
-      let list = ["empty", "empty", "empty", "sanchin"];
+      let list = ["empty", "empty", "empty", "sanchin", 'sanchin', 'energetic'];
       return list[random(0, list.length)];
     }
   }
@@ -302,7 +314,6 @@ function retreat() {
   text.classList.toggle("hidden");
   text.innerHTML = `you've retreated`;
   goDungeon();  
-  resources.coins -= Math.floor(resources.coins / 2);
   updateUI();
   char.hp = hp;
   encounterID = 1;
@@ -699,6 +710,7 @@ function generateCharacter() {
 function moveReceiver(move, receiver, index) { //automatic moves code
   if (receiver == currentEncounter) {
     let random;
+    let counter;
     switch (move) {
       case "BD-move":
         random = diceValues[index];
@@ -706,11 +718,18 @@ function moveReceiver(move, receiver, index) { //automatic moves code
         console.log(random + " - your damage");
         damageDealt += random;
         break;
-      case "RB-move":
-        random = diceValues[index];
-        receiver.hp -= reverse(random);
-        console.log(reverse(random) + " - your damage");
-        damageDealt += reverse(random);
+      case "ID-move":
+        counter = 0;
+
+        for (i = 0; i < genes.length; i++) {
+          if (genes[i] != "empty" && genes[i] != null && genes[i] != "") {
+            console.log(genes[i]);
+            counter++;
+          }
+        }
+
+        console.log(counter);
+        effects.shield += counter * 3;
         break;
       case "CB-move":
         effects.shield += diceValues[index];
@@ -870,8 +889,8 @@ function description(id) { //automatic descriptions + enemie descriptions
       case "JB-move":
         charlistDescription.innerHTML = "<b>JawBreak</b><br>straight jawbreak and out. <br>dmg: 1 + <span class='text-orange-400 font-bold'>hothand</span>.<br>receive +1🔥 for every 4, 5 and 6";
         break;
-      case "RB-move":
-        charlistDescription.innerHTML = "<b>Reverse Bat</b><br> pull back and strike this bones <br>dmg: reverse d6";
+      case "ID-move":
+        charlistDescription.innerHTML = "<b>Iternal Drive</b><br> pull back and relax <br>+3 shield for every gene🧬 you have";
         break;
       case "CB-move":
         charlistDescription.innerHTML = "<b>Counter Block</b><br> push enemies back and thrive <br>effect: shield <d6>";
@@ -884,6 +903,9 @@ function description(id) { //automatic descriptions + enemie descriptions
         break;
       case "energetic":
         charlistDescription.innerHTML = "<b>energetic</b><br>a lot of energy in this legs and mind. and between legs also.";
+        break;
+      case "egalite":
+        charlistDescription.innerHTML = "<b>egalite</b><br>equality is the road to peace, right? <br> +1🎲 (including first) for every dice value";
         break;
       case "sanchin":
         charlistDescription.innerHTML = "<b>sanchin</b><br>ancient samurai breathing technique, that heals your lungs.";
@@ -902,6 +924,9 @@ function description(id) { //automatic descriptions + enemie descriptions
         break;  
       case "curse":
         charlistDescription.innerHTML = "<b>curse</b><br>gonna hurt when someone OLD attacks you";
+        break;    
+      case "coins":
+        charlistDescription.innerHTML = "this is your coins, you can splash them";
         break;    
     case "standart":
       selectAnimation("", "mouseLeave");
@@ -1008,8 +1033,8 @@ function returnMoveColor(move) {
       return "red";
     case "CA+":
       return "darkred"
-    case "RB":
-      return "magenta";
+    case "ID":
+      return "HotPink";
     case "CB":
       return "DarkSlateBlue";
     case "JB":
@@ -1020,10 +1045,24 @@ function returnMoveColor(move) {
 /*genes*/
 function genetics(gene, stage) { //oop genes
   if (stage == "pre") {
+    let ran = 1;
+    let reserve = 0;
+
     switch(gene) {
       case "energetic":
         diceValues[1] += 1;
         moveSlots[1].innerHTML = diceValues[1] + "*";
+        break;
+      case 'egalite':
+        ran = random(1, 4); 
+        reserve = diceValues[ran] + 1;
+        updateUI();
+
+        for (i = 1; i < diceValues.length; i++) {
+          diceValues[i] = reserve;
+          moveSlots[i].innerHTML = diceValues[i];
+        }
+
         break;
     }
   }
@@ -1060,6 +1099,9 @@ function geneIcons(gene) {
       break;
     case "sanchin":
       return "🀀";
+      break;
+    case 'egalite':
+      return '🔗';
       break;
   }
 }
@@ -1199,4 +1241,15 @@ function readSave(e) {
   if (input.files[0]) {
     reader.readAsText(input.files[0]);
   }
+}
+
+function manual() {
+  bigInfo.innerHTML = 
+  `<video width="480" height="360" controls>
+    <source src="public/tutor.mp4" type="video/mp4">
+    <source src="public/tutor.webm" type="video/webm">
+    unvalid format. checkout my yt: .
+    </video>
+    this's short manual to checkout before starting your journey. it will teach you to roll characters, start game and make moves.`;
+  bigInfo.classList.toggle('hidden');
 }
