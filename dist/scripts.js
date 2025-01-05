@@ -74,6 +74,7 @@ var effects = {
 }
 var score = 0;
 var turnsLeft = 16;
+var genesQuat = 0;
 
 /*lists*/
 var moveList = [""]
@@ -191,7 +192,9 @@ window.onload = function() {
   damageReceivedUI = document.getElementById("damage-received");
   var cookie = document.cookie.split(';').map(cookie => cookie.split('=')).reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: decodeURIComponent(value) }), {});
   cookies = cookie;
-  resources.coins = cookies.coins;
+  resources.coins = parseInt(cookies.coins);
+  rollResources.biohazard = parseInt(cookies.roll_biohazard);
+  rollResources.deadbones = parseInt(cookies.roll_deadbones);
   if (atob(cookies.char1) != 'undefined') { charList[0] = JSON.parse(atob(cookies.char1)); } else { charList[0] = ""; }
   if (atob(cookies.char2) != 'undefined') { charList[1] = JSON.parse(atob(cookies.char2)); } else { charList[1] = ""; }
   if (atob(cookies.char3) != 'undefined') { charList[2] = JSON.parse(atob(cookies.char3)); } else { charList[2] = ""; }
@@ -227,6 +230,7 @@ window.onload = function() {
   }
 
   updateUI();
+  releaseInfo();
   
   for (i = 1; i < charlistItems.length; i++) {
     charlistItems[i] = document.getElementById("item-" + i);
@@ -259,8 +263,7 @@ window.onload = function() {
 /*game master*/
 function nextEncounter() {
   if (encounterID <= encounterList.length - 1) {
-   console.log(encounterID + "/" + encounterList.length);
-   resources.coins += Math.floor(currentEncounter.value + diffuclty);
+   resources.coins += parseInt(Math.floor(currentEncounter.value + diffuclty));
    currentEncounter = encounterList[encounterID];
    diffuclty++;
    encounterID++
@@ -276,7 +279,6 @@ function nextEncounter() {
 function win() {
   updateUI();
   score += 2000;
-  resources.coins += diffuclty;
   let text = document.getElementById("big-text");
   text.classList.toggle("hidden");
   let scr = finalScore();
@@ -292,7 +294,8 @@ function lost() {
   let scr = finalScore();
   effects.hothand = 0;
   effects.curse = 0;
-  effects.shield = 0;
+  effects.shield = 0;4
+  if (resources.coins < 50) { resources.coins = Math.floor(resources.coins / 2); } else { resources.coins -= 40; }
   text.innerHTML = `<span>you lost</span> <br>
   <span class="text-lg">final score: ` + scr[0] + " " + `[` + scr[1] + `]`+ `</span>`;
   goDungeon();
@@ -303,7 +306,6 @@ function lost() {
   let item = document.getElementById("character-" + charID);
   item.innerHTML = ""; item.removeAttribute("title");
   charID = -1;
-  resources.coins = 0;
   if (resources.coins < 1) { resources.coins = 1; }
   turnOffMoveUI();
   updateUI();
@@ -358,7 +360,6 @@ function sendMoves() {
   damageDealt = 0;
   damageReceived = 0;
 
-  console.log("===========");
   for (var i = 1; i < moves.length; i++)
   {
     if (moves[i] != undefined) {
@@ -375,16 +376,16 @@ function sendMoves() {
   encounterMove(); //TODO await/async implementation
   turnEnd();
   diceRoller();
+
+  for (i = 1; i < genesQuat; i++) {
+    genetics(genes[i], "pre");
+  }
 }
 
 function diceRoller() {
   for (i = 1; i < diceValues.length; i++) {
     diceValues[i] = diceRoll();
     moveSlots[i].innerHTML = diceValues[i];
-  }
-
-  for (i = 1; i < genes.length; i++) {
-    genetics(genes[i], "pre");
   }
 }
 
@@ -457,7 +458,7 @@ function characterChoose(Char, mode, id) {
             charlistGenes[i].innerHTML = geneIcons(genes[i]);
             charlistGenes[i].setAttribute('title', genes[i]);
           }
-          else if (genes[i] == "empty") {
+          else if (genes[i] == "empty" || genes[i] == null) {
             charlistGenes[i].innerHTML = "";
           }
         }
@@ -469,15 +470,21 @@ function characterChoose(Char, mode, id) {
           }
         }
 
+        for (i = 0; i < genes.length; i++) {  
+          if (genes[i] != "empty" && genes[i] != null && genes[i] != "") {
+            genesQuat++;
+          }
+        }
+
         let hpPreview = document.getElementById("hp-preview");
         let namePreview = document.getElementById("name-preview");
         hp = char.hp;
         if (namePreview.classList.contains('hidden')) {
-          namePreview.innerHTML = `<span class="text-purple-400 font-semibold">your name:</span> ` + char.name + ``;
-          hpPreview.innerHTML = `<span class="text-red-400 font-semibold">your hp:</span> ` + hp + ``;
           hpPreview.classList.toggle("hidden");
           namePreview.classList.toggle("hidden");
         }
+        namePreview.innerHTML = `<span class="text-purple-400 font-semibold">your name:</span> ` + char.name + ``;
+        hpPreview.innerHTML = `<span class="text-red-400 font-semibold">your hp:</span> ` + hp + ``;
       }
 
       if (mode == "preview") {
@@ -505,7 +512,7 @@ function characterChoose(Char, mode, id) {
           }
         }
 
-        for (i = 1; i < genes.length; i++) {
+        for (i = 1; i < genesQuat; i++) {
           if (geneIcons(rolledChar.genes[i]) != charlistGenes[i].innerHTML && charlistGenes[i].innerHTML != undefined) {
             charlistGenes[i].innerHTML = "";
             charlistGenes[i].removeAttribute("title");
@@ -701,6 +708,12 @@ function generateCharacter() {
     else if (type == "deadbones") { Resources.deadbones++; }
   }
 
+  for (i = 1; i < 12; i++) {
+    if (genelist[i] == null) {
+      genelist[i] = "empty";
+    }
+  }
+
   let Hp = chance(7, 25);
 
   return { name: Name, moveList: movelist, gunList: gunlist, genes: genelist, resources: Resources, hp: Hp };
@@ -715,30 +728,17 @@ function moveReceiver(move, receiver, index) { //automatic moves code
       case "BD-move":
         random = diceValues[index];
         receiver.hp -= random;
-        console.log(random + " - your damage");
         damageDealt += random;
         break;
       case "ID-move":
-        counter = 0;
-
-        for (i = 0; i < genes.length; i++) {
-          if (genes[i] != "empty" && genes[i] != null && genes[i] != "") {
-            console.log(genes[i]);
-            counter++;
-          }
-        }
-
-        console.log(counter);
-        effects.shield += counter * 3;
+        effects.shield += genesQuat * 3;
         break;
       case "CB-move":
         effects.shield += diceValues[index];
-        console.log(diceValues[index] + " - your add shield");
         break;
       case "JB-move":
         let dmg = 1 + effects.hothand;
-        if (diceValues[index] > 3 && diceValues[index] < 7) { effects.hothand++; }
-        console.log(dmg + " - your damage");
+        if (diceValues[index] > 4 && diceValues[index] < 7) { effects.hothand++; }
         receiver.hp -= dmg;
         damageDealt += dmg;
         break;
@@ -753,7 +753,6 @@ function moveReceiver(move, receiver, index) { //automatic moves code
         let ran = diceValues[random(2,5)];
         dmg = ran - overHP; 
         if (dmg < 0) { dmg = 0; }
-        console.log("dmg: " + ran + " overhp: " + overHP);
         hp -= dmg;
         damageReceived += dmg;
         break;
@@ -761,7 +760,6 @@ function moveReceiver(move, receiver, index) { //automatic moves code
         dmg = (1 + effects.curse) - overHP; 
         if (dmg < 0) { dmg = 0; }
         hp -= dmg;
-        console.log("dmg: " + (1 + effects.curse) + " overhp: " + overHP);
         damageReceived += dmg; 
         effects.curse += damageDealt;
         if (effects.curse > 0) { document.getElementById("player-effects").innerHTML += `<span title="curse" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart'")>` + effects.curse + `👁️‍🗨️` + `<span>`}
@@ -818,6 +816,10 @@ function encounterMove() {
 
 /*ui manipulation*/
 function goDungeon(button) {
+  score = 0;
+  turnsLeft = 16;
+  diffuclty = 1;
+
   if (char != "" && char != undefined) {
     document.getElementById("player-effects").innerHTML = "";
     encounterID = 1;
@@ -837,6 +839,7 @@ function goDungeon(button) {
     if (button != undefined) { button.classList.toggle("hidden"); } else { document.getElementById("start-button").classList.toggle("hidden"); }
     inDungeon = !inDungeon;
     dungen.classList.toggle("hidden");
+    document.getElementById("blocker-HR").classList.toggle("hidden");
 
     if (!inDungeon) {
       encounterList = generateEncounters(12);
@@ -852,13 +855,14 @@ function goDungeon(button) {
         div.innerHTML += `<div id="` + moveList[i].toString() + `-move" class="font-semibold hover:cursor-pointer hover:font-bold" draggable="true" ondragstart="drag(event)" onmouseover="description(event.target.id)" onmouseleave="description('standart')" style="color: ` + returnMoveColor(moveList[i]) + `">` + i + `. ` + moveList[i].toString() + `</div>`;
       }  
     } 
-
-    /*for (i = 1; i < 5; i++) { ! MAKE COLORS TURN OFF
-      document.getElementById("move-" + i).classList.toggle(returnMoveColor(moveList[i]));
-    }*/
     
     hp = char.hp;
-    diceRoller(); 
+    diceRoller();
+
+    for (let a = 1; a < genesQuat; a++) {
+      genetics(genes[a], "pre");
+    }
+
     updateUI();
   }
   else {
@@ -887,7 +891,7 @@ function description(id) { //automatic descriptions + enemie descriptions
         charlistDescription.innerHTML = "<b>Bat Drive!</b><br> ultimate head smashing move <br>dmg: d6";
         break;
       case "JB-move":
-        charlistDescription.innerHTML = "<b>JawBreak</b><br>straight jawbreak and out. <br>dmg: 1 + <span class='text-orange-400 font-bold'>hothand</span>.<br>receive +1🔥 for every 4, 5 and 6";
+        charlistDescription.innerHTML = "<b>JawBreak</b><br>straight jawbreak and out. <br>dmg: 1 + <span class='text-orange-400 font-bold'>hothand</span>.<br>receive +1🔥 for every 5 and 6";
         break;
       case "ID-move":
         charlistDescription.innerHTML = "<b>Iternal Drive</b><br> pull back and relax <br>+3 shield for every gene🧬 you have";
@@ -972,6 +976,7 @@ function selectAnimation(item, action) {  //optimize + more select animations
 
 function HR() { //optimize
   buildingHR.classList.toggle("hidden");
+  if (document.getElementById("blocker-HR").classList.contains("hidden")) { document.getElementById("blocker-HR").classList.toggle("hidden"); }
 
   for (i = 1; i < buildingItems.length; i++) {
     buildingItems[i].classList.toggle("hidden");
@@ -1008,10 +1013,13 @@ function toggleBigInfo() {
 
 function updateUI() {
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + hp;
+  document.getElementById("turns-left").innerHTML = turnsLeft;
   resourcesUI.coins.innerHTML = "@" + resources.coins;
   document.cookie = "coins=" + resources.coins;
   rollResourcesUI.biohazard.innerHTML = "biohazard: " + rollResources.biohazard;
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
+  document.cookie = "roll_biohazard=" + rollResources.biohazard;
+  document.cookie = "roll_deadbones=" + rollResources.deadbones;
   document.getElementById("progress-bar").innerHTML = encounterID + "/" + encounterList.length;
   document.cookie = "char1=" + btoa(JSON.stringify(charList[0])); 
   document.cookie = "char2=" + btoa(JSON.stringify(charList[1])); 
@@ -1058,9 +1066,11 @@ function genetics(gene, stage) { //oop genes
         reserve = diceValues[ran] + 1;
         updateUI();
 
-        for (i = 1; i < diceValues.length; i++) {
-          diceValues[i] = reserve;
-          moveSlots[i].innerHTML = diceValues[i];
+        a = 1;
+        while (a <= 4) {
+          diceValues[a] = reserve;
+          moveSlots[a].innerHTML = diceValues[a];
+          a++;
         }
 
         break;
@@ -1192,8 +1202,9 @@ function readSave(e) {
   reader.onload = function(){
     let data = reader.result;
     data = data.split(';').map(cookie => cookie.split('=')).reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: decodeURIComponent(value) }), {})
-    console.log(data);
-    resources.coins = data.coins;
+    resources.coins = parseInt(data.coins);
+    rollResources.biohazard = data.roll_biohazard;
+    rollResources.deadbones = data.roll_deadbones;
 
     if (atob(data.char1) != '""') { 
       charList[0] = JSON.parse(atob(data.char1)); 
@@ -1252,4 +1263,14 @@ function manual() {
     </video>
     this's short manual to checkout before starting your journey. it will teach you to roll characters, start game and make moves.`;
   bigInfo.classList.toggle('hidden');
+}
+
+function releaseInfo() {
+  if (cookies.patch_notes_checked != 1) {
+    bigInfo.innerHTML = 
+    `patch notes: <br>` +
+    `v1. demo release!`;
+    document.cookie = 'patch_notes_checked=1';
+    bigInfo.classList.toggle('hidden');
+  } 
 }
