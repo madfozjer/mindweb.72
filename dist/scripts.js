@@ -70,7 +70,8 @@ var overHP = 0;
 var effects = {
   shield: 0,
   hothand: 0,
-  curse: 0
+  curse: 0,
+  spirit: 0
 }
 var score = 0;
 var turnsLeft = 16;
@@ -153,11 +154,11 @@ const  characterGenerator = {
 
   returnGene(type) {
     if (type == "biohazard") { //3 empty, 2 energetic, 1 egalite
-      let list = ["empty", "empty", "energetic", 'energetic', 'egalite']  //rewrite like this { empty: 99, energetic: 1 } out of 100
+      let list = ["empty", "empty", "energetic", 'energetic']  //rewrite like this { empty: 99, energetic: 1 } out of 100
       return list[random(0, list.length)];
     }
     else if (type == "deadbones") {
-      let list = ["empty", "empty", "empty", "sanchin", 'sanchin', 'energetic'];
+      let list = ["empty", "empty", "empty", "sanchin", 'sanchin', 'energetic', 'IME', 'IME', 'egalite'];
       return list[random(0, list.length)];
     }
   }
@@ -379,6 +380,7 @@ function sendMoves() {
 
   for (i = 1; i < genesQuat; i++) {
     genetics(genes[i], "pre");
+    console.log(i);
   }
 }
 
@@ -475,6 +477,8 @@ function characterChoose(Char, mode, id) {
             genesQuat++;
           }
         }
+
+        genesQuat++;
 
         let hpPreview = document.getElementById("hp-preview");
         let namePreview = document.getElementById("name-preview");
@@ -657,15 +661,12 @@ function generateCharacter() {
   let gunlist = [""];
   let genelist = [""];
   let Resources = {biohazard: 0, deadbones: 0 };
-  let ran = random(1, 10);
+  let ran = random(0, 10);
 
   let n = chance(2, 5); gunlist.length = n;
   for (i = 1; i < n; i++) {
     let type = (ran > biohazard) ? "biohazard" : "deadbones";
     gunlist[i] = characterGenerator.returnGun(type);
-
-    if (type == "biohazard") { Resources.biohazard++; }
-    else if (type == "deadbones") { Resources.deadbones++; }
   }
 
   for (i = 0; i < gunlist.length; i++) {
@@ -675,6 +676,10 @@ function generateCharacter() {
       }
     }
   }
+
+  let type = (ran < biohazard) ? "biohazard" : "deadbones";
+  if (type == "biohazard") { Resources.biohazard += gunlist.length - 1; }
+  else if (type == "deadbones") { Resources.deadbones += gunlist.length - 1; }
 
   n = chance(2, 4);
   movelist = []; movelist.length = n;
@@ -696,23 +701,27 @@ function generateCharacter() {
 
   n = chance(2, 12); genelist.length = n;
   for (i = 1; i < n; i++) {
-    let type = (ran > biohazard) ? "biohazard" : "deadbones";
+    let type = (ran < biohazard) ? "biohazard" : "deadbones";
     genelist[i] = characterGenerator.returnGene(type);
+    if (type == "biohazard") { Resources.biohazard += 1; }
+    else if (type == "deadbones") { Resources.deadbones += 1; }
 
     if (genelist[i] == "empty") {
       genelist.splice(a, 1);
       break;
     }
-
-    if (type == "biohazard") { Resources.biohazard++; }
-    else if (type == "deadbones") { Resources.deadbones++; }
   }
+
 
   for (i = 1; i < 12; i++) {
     if (genelist[i] == null) {
       genelist[i] = "empty";
     }
   }
+
+  Resources.biohazard = Math.floor(Resources.biohazard);
+  Resources.deadbones = Math.floor(Resources.deadbones);
+  console.log(Resources);
 
   let Hp = chance(7, 25);
 
@@ -726,7 +735,7 @@ function moveReceiver(move, receiver, index) { //automatic moves code
     let counter;
     switch (move) {
       case "BD-move":
-        random = diceValues[index];
+        random = diceValues[index] + effects.spirit;
         receiver.hp -= random;
         damageDealt += random;
         break;
@@ -804,6 +813,7 @@ function endEncounter() {
 function encounterMove() {
   moveReceiver(currentEncounter.move, "player");
   damageReceivedUI.innerHTML = "-" + damageReceived;
+  effects.curse += damageReceived;
   turnsLeft--;
   document.getElementById("turns-left").innerHTML = turnsLeft;
 
@@ -819,6 +829,12 @@ function goDungeon(button) {
   score = 0;
   turnsLeft = 16;
   diffuclty = 1;
+  effects.spirit = 0;
+  effects.curse = 0;
+  effects.shield = 0;
+  effects.hothand = 0;
+  damageReceived = 0; damageDealt = 0;
+  damageReceivedUI.innerHTML = "-" + damageReceived;
 
   if (char != "" && char != undefined) {
     document.getElementById("player-effects").innerHTML = "";
@@ -888,7 +904,7 @@ function hideMe(item) {
 function description(id) { //automatic descriptions + enemie descriptions
   switch (id) {
       case "BD-move":
-        charlistDescription.innerHTML = "<b>Bat Drive!</b><br> ultimate head smashing move <br>dmg: d6";
+        charlistDescription.innerHTML = "<b>Bat Drive!</b><br> ultimate head smashing move <br>dmg: d6 + damage received.";
         break;
       case "JB-move":
         charlistDescription.innerHTML = "<b>JawBreak</b><br>straight jawbreak and out. <br>dmg: 1 + <span class='text-orange-400 font-bold'>hothand</span>.<br>receive +1🔥 for every 5 and 6";
@@ -908,8 +924,14 @@ function description(id) { //automatic descriptions + enemie descriptions
       case "energetic":
         charlistDescription.innerHTML = "<b>energetic</b><br>a lot of energy in this legs and mind. and between legs also.";
         break;
+      case "spirit":
+        charlistDescription.innerHTML = "<b>spirit</b><br>if you believe enough, your damage becomes bigger.";
+        break;
       case "egalite":
         charlistDescription.innerHTML = "<b>egalite</b><br>equality is the road to peace, right? <br> +1🎲 (including first) for every dice value";
+        break;
+      case "IME":
+        charlistDescription.innerHTML = "<b>IME</b><br>can someone destroy a person in despair? <br> +1🧿 for every 1 point of damage received";
         break;
       case "sanchin":
         charlistDescription.innerHTML = "<b>sanchin</b><br>ancient samurai breathing technique, that heals your lungs.";
@@ -1012,6 +1034,12 @@ function toggleBigInfo() {
 }
 
 function updateUI() {
+  if (rollResources.biohazard >= 100) { rollResources.biohazard = 99; }
+  else if (rollResources.deadbones >= 100) { rollResources.deadbones = 90; }
+
+  if (rollResources.biohazard < 0) { rollResources.biohazard = 0; } 
+  else if (rollResources.deadbones < 0) { rollResources.deadbones = 0; }
+
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + hp;
   document.getElementById("turns-left").innerHTML = turnsLeft;
   resourcesUI.coins.innerHTML = "@" + resources.coins;
@@ -1028,9 +1056,6 @@ function updateUI() {
   for (i = 0; i < 3; i++) {
     document.getElementById("REQcharacter-" + i).innerHTML = document.getElementById("character-" + i).innerHTML;
   }
-
-  if (rollResources.biohazard < 0) { rollResources.biohazard = 0; } 
-  else if (rollResources.deadbones < 0) { rollResources.deadbones = 0; }
 }
 
 function returnMoveColor(move) {
@@ -1074,6 +1099,10 @@ function genetics(gene, stage) { //oop genes
         }
 
         break;
+      case 'IME':
+        effects.spirit = damageReceived;
+        console.log("IME");
+        break;
     }
   }
   else if (stage == "post") {
@@ -1097,6 +1126,7 @@ function effect(mode) {
     let div = document.getElementById("player-effects");
     overHP += effects.shield;
     if (effects.shield > 0) { div.innerHTML += `<span title="shield" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart')">` + effects.shield + `🔰` + `<span>`; }
+    if (genes.toString().includes("IME")) { console.log("spirit!"); div.innerHTML += `<span title="spirit" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart'")>` + `🧿` + `<span>`}
     if (effects.shield > 0) { effects.shield -= 6; }
     if (effects.shield < 0) { effects.shield = 0; }
   }
@@ -1106,13 +1136,12 @@ function geneIcons(gene) {
   switch(gene) {
     case "energetic":
       return "⚡";
-      break;
     case "sanchin":
       return "🀀";
-      break;
     case 'egalite':
       return '🔗';
-      break;
+    case 'IME':
+      return '🐙';
   }
 }
 
