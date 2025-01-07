@@ -152,13 +152,13 @@ const  characterGenerator = {
     return returnval;
   },
 
-  returnGene(type) {
-    if (type == "biohazard") { //3 empty, 2 energetic, 1 egalite
-      let list = ["empty", "empty", "energetic", 'energetic']  //rewrite like this { empty: 99, energetic: 1 } out of 100
+  returnGene(type) { //rewrite like this { empty: 99, energetic: 1 } out of 100
+    if (type == "biohazard") { 
+      let list = ["empty", "empty", "energetic", 'energetic', 'IME', 'IME', 'IME', 'egalite',] //2 empty, 2 energetic, 3 IME, 1 egalite. unique: egalite
       return list[random(0, list.length)];
     }
     else if (type == "deadbones") {
-      let list = ["empty", "empty", "empty", "sanchin", 'sanchin', 'energetic', 'IME', 'IME', 'egalite'];
+      let list = ["empty", "empty", "empty", "sanchin", 'sanchin', 'energetic', 'IME', "energetic", 'energetic']; //3 empty, 2 sanchin, 3 energetic, 1 IME. unique: sanchin
       return list[random(0, list.length)];
     }
   }
@@ -167,6 +167,16 @@ const  characterGenerator = {
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
+  if (document.cookie == "") { 
+    document.cookie = "char3=IiI=;";
+    document.cookie = "roll_biohazard=50;";
+    document.cookie = "roll_deadbones=50;";
+    document.cookie = "patch_notes_checked=0;"; 
+    document.cookie = "char1=IiI=;";
+    document.cookie = "coins=3;";
+    document.cookie = "char2=IiI=";
+  }
+  
   encounterList = generateEncounters(12);
   encounterHPbar = document.getElementById("encounter-healthbar");
   healthbar = document.getElementById("healthbar");
@@ -191,16 +201,18 @@ window.onload = function() {
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
   damageDealtUI = document.getElementById("damage-dealt");
   damageReceivedUI = document.getElementById("damage-received");
+  console.log(document.cookie);
   var cookie = document.cookie.split(';').map(cookie => cookie.split('=')).reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: decodeURIComponent(value) }), {});
   cookies = cookie;
   resources.coins = parseInt(cookies.coins);
   rollResources.biohazard = parseInt(cookies.roll_biohazard);
   rollResources.deadbones = parseInt(cookies.roll_deadbones);
+  
   if (atob(cookies.char1) != 'undefined') { charList[0] = JSON.parse(atob(cookies.char1)); } else { charList[0] = ""; }
   if (atob(cookies.char2) != 'undefined') { charList[1] = JSON.parse(atob(cookies.char2)); } else { charList[1] = ""; }
   if (atob(cookies.char3) != 'undefined') { charList[2] = JSON.parse(atob(cookies.char3)); } else { charList[2] = ""; }
 
-  if (atob(cookies.char1) != '""') { 
+  if (atob(cookies.char1) != '""' && atob(cookies.char1) != 'undefined') { 
     charList[0] = JSON.parse(atob(cookies.char1)); 
     let itemHR = document.getElementById("character-0"); 
     itemHR.innerHTML = charList[0].name.substring(0, 1).toUpperCase();
@@ -210,7 +222,7 @@ window.onload = function() {
     charList[0] = ""; 
   }
 
-  if (atob(cookies.char2) != '""') { 
+  if (atob(cookies.char2) != '""' && atob(cookies.char2) != 'undefined') { 
     charList[1] = JSON.parse(atob(cookies.char2)); 
     let itemHR = document.getElementById("character-1"); 
     itemHR.innerHTML = charList[1].name.substring(0, 1).toUpperCase();
@@ -220,7 +232,7 @@ window.onload = function() {
     charList[1] = ""; 
   }
 
-  if (atob(cookies.char3) != '""') { 
+  if (atob(cookies.char3) != '""' && atob(cookies.char3) != 'undefined') { 
     charList[2] = JSON.parse(atob(cookies.char3)); 
     let itemHR = document.getElementById("character-2"); 
     itemHR.innerHTML = charList[2].name.substring(0, 1).toUpperCase();
@@ -264,7 +276,7 @@ window.onload = function() {
 /*game master*/
 function nextEncounter() {
   if (encounterID <= encounterList.length - 1) {
-   resources.coins += parseInt(Math.floor(currentEncounter.value + diffuclty));
+   resources.coins += parseInt(Math.floor(currentEncounter.value * diffuclty));
    currentEncounter = encounterList[encounterID];
    diffuclty++;
    encounterID++
@@ -278,6 +290,7 @@ function nextEncounter() {
 }
 
 function win() {
+  if(text.classList.contains("dark")) { text.classList.toggle("dark"); }
   updateUI();
   score += 2000;
   let text = document.getElementById("big-text");
@@ -290,8 +303,8 @@ function win() {
 
 function lost() {
   let text = document.getElementById("big-text");
-  text.classList.toggle("dark");
   text.classList.toggle("hidden");
+  if(!text.classList.contains("dark")) { text.classList.toggle("dark"); }
   let scr = finalScore();
   effects.hothand = 0;
   effects.curse = 0;
@@ -368,7 +381,7 @@ function sendMoves() {
     }
   }
 
-  for (i = 1; i < genes.length; i++) {
+  for (i = 1; i <= genesQuat; i++) {
     genetics(genes[i], "post");
   }
   
@@ -378,9 +391,8 @@ function sendMoves() {
   turnEnd();
   diceRoller();
 
-  for (i = 1; i < genesQuat; i++) {
+  for (i = 1; i <= genesQuat; i++) {
     genetics(genes[i], "pre");
-    console.log(i);
   }
 }
 
@@ -426,6 +438,7 @@ function characterChoose(Char, mode, id) {
       gunList = char.gunList;
       genes = char.genes;
       charID = id;
+      genesQuat = 0;
 
       for (i = 1; i < moveList.length; i++) { 
         if (moveList[i] != undefined || moveList[i] != "") {
@@ -478,7 +491,7 @@ function characterChoose(Char, mode, id) {
           }
         }
 
-        genesQuat++;
+        
 
         let hpPreview = document.getElementById("hp-preview");
         let namePreview = document.getElementById("name-preview");
@@ -517,7 +530,7 @@ function characterChoose(Char, mode, id) {
         }
 
         for (i = 1; i < genesQuat; i++) {
-          if (geneIcons(rolledChar.genes[i]) != charlistGenes[i].innerHTML && charlistGenes[i].innerHTML != undefined) {
+          if (geneIcons(rolledChar.genes[i]) != charlistGenes[i].innerHTML && charlistGenes[i].innerHTML != undefined && geneIcons(rolledChar.genes[i]) != undefined) {
             charlistGenes[i].innerHTML = "";
             charlistGenes[i].removeAttribute("title");
           }
@@ -609,7 +622,6 @@ function rollREQ() {
   if (resources.coins > 0 && !inDungeon) {
     rolledChar = generateCharacter();
     resources.coins--;
-    document.getElementById("roll-REQ");
     updateUI();
     document.getElementById("REQ-preview").innerHTML = rolledChar.name.substring(0, 1).toUpperCase();
     document.getElementById("REQ-preview").title = rolledChar.name.charAt(0).toLowerCase() + rolledChar.name.slice(1);  
@@ -721,7 +733,6 @@ function generateCharacter() {
 
   Resources.biohazard = Math.floor(Resources.biohazard);
   Resources.deadbones = Math.floor(Resources.deadbones);
-  console.log(Resources);
 
   let Hp = chance(7, 25);
 
@@ -800,7 +811,7 @@ function turnEnd() {
     endEncounter();
   }
 
-  score -= damageReceived * 20;
+  score -= damageReceived * 30;
 }
 
 function endEncounter() {
@@ -875,7 +886,7 @@ function goDungeon(button) {
     hp = char.hp;
     diceRoller();
 
-    for (let a = 1; a < genesQuat; a++) {
+    for (let a = 1; a <= genesQuat; a++) {
       genetics(genes[a], "pre");
     }
 
@@ -904,7 +915,7 @@ function hideMe(item) {
 function description(id) { //automatic descriptions + enemie descriptions
   switch (id) {
       case "BD-move":
-        charlistDescription.innerHTML = "<b>Bat Drive!</b><br> ultimate head smashing move <br>dmg: d6 + damage received.";
+        charlistDescription.innerHTML = "<b>Bat Drive!</b><br> ultimate head smashing move <br>dmg: d6.";
         break;
       case "JB-move":
         charlistDescription.innerHTML = "<b>JawBreak</b><br>straight jawbreak and out. <br>dmg: 1 + <span class='text-orange-400 font-bold'>hothand</span>.<br>receive +1🔥 for every 5 and 6";
@@ -1100,8 +1111,7 @@ function genetics(gene, stage) { //oop genes
 
         break;
       case 'IME':
-        effects.spirit = damageReceived;
-        console.log("IME");
+        effects.spirit += damageReceived;
         break;
     }
   }
@@ -1109,6 +1119,9 @@ function genetics(gene, stage) { //oop genes
     switch(gene) {
       case "sanchin":
         hp += 1;
+        break;
+      case 'IME':
+        effects.spirit = 0
         break;
     }
   }
@@ -1125,9 +1138,9 @@ function effect(mode) {
   if ("post") {
     let div = document.getElementById("player-effects");
     overHP += effects.shield;
-    if (effects.shield > 0) { div.innerHTML += `<span title="shield" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart')">` + effects.shield + `🔰` + `<span>`; }
-    if (genes.toString().includes("IME")) { console.log("spirit!"); div.innerHTML += `<span title="spirit" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart'")>` + `🧿` + `<span>`}
+    if (genes.toString().includes("IME")) { div.innerHTML += `<span title="spirit" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart'")>` + `🧿` + `<span>`}
     if (effects.shield > 0) { effects.shield -= 6; }
+    if (effects.shield > 0) { div.innerHTML += `<span title="shield" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart')">` + effects.shield + `🔰` + `<span>`; }
     if (effects.shield < 0) { effects.shield = 0; }
   }
 }
@@ -1302,4 +1315,12 @@ function releaseInfo() {
     document.cookie = 'patch_notes_checked=1';
     bigInfo.classList.toggle('hidden');
   } 
+}
+
+function resetSave() {
+  document.cookie.split(';').forEach(cookie => {
+      const eqPos = cookie.indexOf('=');
+      const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  });
 }
