@@ -5,6 +5,3 @@ node_modules/
 
 #vsc workspace files
 *.code-workspace
-
-#github pages
-madfozjer.github.io/
