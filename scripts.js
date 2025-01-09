@@ -387,7 +387,6 @@ function sendMoves() {
   }
   
   damageDealtUI.innerHTML = "-" + damageDealt;
-  score += damageDealt * 20;
   effect("pre");
   encounterMove(); //TODO await/async implementation
   turnEnd();
@@ -874,7 +873,7 @@ function goDungeon(button) {
       encounterList = generateEncounters(12);
       encounterID = 1;
       currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty / 10);
-      encounterHPbar.innerHT = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
+      encounterHPbar.innerHTML = "<span class='text-green-500'>enemie's hp: </span>" + currentEncounter.hp;
     }
 
     let div = document.getElementById("move-list");
@@ -1199,7 +1198,7 @@ function finalScore() {
 
   idealScore += 4 * 150;
   score += turnsLeft * 150;
-  idealScore += 4000;
+  idealScore += 2000;
   let percentage = Math.floor((score / idealScore) * 100);
   if (turnsLeft == 16) { percentage = 0; }
   console.log(percentage + "%" + " " + score + "/" + idealScore);
@@ -1332,7 +1331,7 @@ function resetSave() {
 function storyBoard(text) {
   switch (text) {
     case "start":
-      if (cookies.story_read < 1) {
+      if (cookies.story_read < 0) {
         if (bigInfo.classList.contains("hidden")) { bigInfo.classList.toggle('hidden'); }
         bigInfo.innerHTML = 
         `so, your name is POLKOVNIK. you are in charge of this operation now.

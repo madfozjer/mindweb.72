@@ -8,7 +8,7 @@ app.use('/static', express.static('public'));
 app.use(express.static(path.join(__dirname, "dist")))
 
 app.get('/', (req, res) => {
-    fs.readFile('dist/index.html', 'utf8', (err, html) => {
+    fs.readFile('./index.html', 'utf8', (err, html) => {
         if (err) { console.error(err); }
         res.send(html);
     });
