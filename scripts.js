@@ -387,6 +387,7 @@ function sendMoves() {
   }
   
   damageDealtUI.innerHTML = "-" + damageDealt;
+  score += damageDealt * 20;
   effect("pre");
   encounterMove(); //TODO await/async implementation
   turnEnd();
@@ -1198,7 +1199,7 @@ function finalScore() {
 
   idealScore += 4 * 150;
   score += turnsLeft * 150;
-  idealScore += 2000;
+  idealScore += 4000;
   let percentage = Math.floor((score / idealScore) * 100);
   if (turnsLeft == 16) { percentage = 0; }
   console.log(percentage + "%" + " " + score + "/" + idealScore);
