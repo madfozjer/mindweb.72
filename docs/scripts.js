@@ -158,7 +158,7 @@ const  characterGenerator = {
       return list[random(0, list.length)];
     }
     else if (type == "deadbones") {
-      let list = ["empty", "empty", "empty", "sanchin", 'sanchin', 'energetic', 'IME', "energetic", 'energetic']; //3 empty, 2 sanchin, 3 energetic, 1 IME. unique: sanchin
+      let list = ["empty", "empty", "empty", "sanchin", 'sanchin', 'energetic', "energetic", 'energetic']; //3 empty, 2 sanchin, 3 energetic, unique: sanchin
       return list[random(0, list.length)];
     }
   }
@@ -1300,17 +1300,6 @@ function readSave(e) {
   }
 }
 
-function manual() {
-  bigInfo.innerHTML = 
-  `<video width="480" height="360" controls>
-    <source src="public/tutor.mp4" type="video/mp4">
-    <source src="public/tutor.webm" type="video/webm">
-    unvalid format. checkout my yt: .
-    </video>
-    this's short manual to checkout before starting your journey. it will teach you to roll characters, start game and make moves.`;
-  bigInfo.classList.toggle('hidden');
-}
-
 function releaseInfo() {
   if (cookies.patch_notes_checked < 1) {
     document.cookie = 'patch_notes_checked=1';
@@ -1336,12 +1325,136 @@ function storyBoard(text) {
       if (cookies.story_read < 1) {
         if (bigInfo.classList.contains("hidden")) { bigInfo.classList.toggle('hidden'); }
         bigInfo.innerHTML = 
-        `so, your name is POLKOVNIK. you are in charge of this operation now.
-         your main objective is pretty simple: get in, survive for 12 turns, defeat the last enemy and retreat.
-         if you feel that you do not have enough time - retreat quickly. any mistake will have consequences in the form of operator's death.
+        `so, your name is (custom name). you are in charge of this operation now.
+         your main objective is pretty simple: <b>get in, survive for 12 turns, defeat the last enemy and retreat.</b>
+         if you feel that you do not have enough time - <b>retreat immediately</b>. any mistake will have consequences in the form of operator's death.
          good luck in your search for magical fuel. sincerely, polkovnik.`;
         document.cookie = 'story_read=1';
         break;
       }
   }
+}
+
+function tutorial() {
+  let tutorial = document.getElementById("tutorial-window");
+  let phase = parseInt(tutorial.title);
+
+  if (!document.getElementById("tutorial-switch").classList.contains("hidden")) document.getElementById("tutorial-switch").classList.toggle("hidden"); 
+
+  console.log(phase);
+  switch(phase) {
+    case 1:
+      tutorial.innerHTML = "this tutorial will guide you through basic rules of the game. <br><br> you can click on me to go further (you can do it with every infobox)";
+      break;
+    case 2:
+      tutorial.innerHTML = "to start the game, you need to <b>roll</b> your first character-operator. click REQ to do it";
+      tutorial.style.left = "20rem";
+      tutorial.style.top = "10rem";
+      tutorial.style.width = "18rem";
+      break;
+    case 3: //add lock before REQ
+      tutorial.innerHTML = "you can see your coins (@) and roll resources (biohazard and deadbones). <br><br> coins are spended to roll characters and roll resources determain what character pool you are accesing.";
+      tutorial.style.left = "25rem";
+      tutorial.style.top = "12rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 4: //add lock before roll
+      tutorial.innerHTML = "click ROLL to test your luck.";
+      tutorial.style.left = "25rem";
+      tutorial.style.top = "12rem";
+      tutorial.style.width = "14rem";
+      break;
+    case 5: 
+      tutorial.innerHTML = "down there you can see what character you got. <br><br>try to hover on different things and read about them.";
+      tutorial.style.left = "10rem";
+      tutorial.style.top = "30rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 6: //add preview character
+      tutorial.innerHTML = "every character has 3 characteristics: his <b>genes, moves and guns</b>.";
+      tutorial.style.left = "10rem";
+      tutorial.style.top = "30rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 7: //
+      tutorial.innerHTML = "<b>genes</b> are displayed above all of the other things. they determain additional bonuses for you character and can strongly impact the game. don't worry if you can't see any - it's normal for character to don't have any genes.";
+      tutorial.style.left = "10rem";
+      tutorial.style.top = "30rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 8: //
+      tutorial.innerHTML = "<b>moves</b> are displayed on the left. they determain what can your character do during battle. read carefully every effect. d6 is just [random] value, by the way.";
+      tutorial.style.left = "10rem";
+      tutorial.style.top = "30rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 9: //
+      tutorial.innerHTML = "<b>guns</b> are displayed on the right. they determain what moves your character can have. roll resources play huge factor in what guns you can receive.";
+      tutorial.style.left = "10rem";
+      tutorial.style.top = "30rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 10: //
+      tutorial.innerHTML = "you can also see your character health points alongside name next to guns.";
+      tutorial.style.left = "10rem";
+      tutorial.style.top = "30rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 11: //
+      tutorial.innerHTML = "you can save your operator or delete him if you don't like him. but be careful - you have limited amount of coins!";
+      tutorial.style.left = "10rem";
+      tutorial.style.top = "20rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 12: //
+      tutorial.innerHTML = "when you receive your first character, go to HR and choose them by clicking on it";
+      tutorial.style.left = "42rem";
+      tutorial.style.top = "10rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 13: //
+      tutorial.innerHTML = "then you can start your run by clicking START";
+      tutorial.style.left = "42rem";
+      tutorial.style.top = "10rem";
+      tutorial.style.width = "25rem";
+      tutorial.style.borderColor = "Green";
+      break;
+    case 14: //
+      tutorial.innerHTML = "in giant rectangle you can see your <b>encounter</b>. try to hover on it and guess what he does.";
+      tutorial.style.left = "42rem";
+      tutorial.style.top = "10rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 15: //
+      tutorial.innerHTML = "below you can see enemie's hp, your hp, enemies gone, your damage and enemies damage to you last turn and turns left.";
+      tutorial.style.left = "65rem";
+      tutorial.style.top = "25rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 16: //
+      tutorial.innerHTML = "but how to make your moves? you need to <b>hover</b> above colourful text [your moves list] and put it on big square-dices. to un-put move just click on it.";
+      tutorial.style.left = "36rem";
+      tutorial.style.top = "30rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 17: //
+      tutorial.innerHTML = "when you're ready, click <b>SEND</b> and see what you done. hover above all things you can see and read what they do! or guess!";
+      tutorial.style.left = "65rem";
+      tutorial.style.top = "30rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 18: //
+      tutorial.innerHTML = "if you hp bar is low, just click retreat and leave this cursed place. you will make some cash and will further build your team.";
+      tutorial.style.left = "65rem";
+      tutorial.style.top = "30rem";
+      tutorial.style.width = "25rem";
+      break;
+    case 19: //
+      tutorial.classList.toggle("hidden");
+      document.getElementById("tutorial-switch").classList.toggle("hidden");
+      break;
+  }
+
+  if (phase < 2) { tutorial.classList.toggle("hidden"); }
+  if (phase > 0) tutorial.title = parseInt(tutorial.title) + 1;
 }

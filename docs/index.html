@@ -149,7 +149,10 @@
     </div>  
     <div class="absolute top-12 right-10 text-right" style="width: 100px"><a onclick="newSave(document.cookie)" class="hover:cursor-pointer">save</a></div>
     <div class="absolute top-6 right-10 text-right" style="width: 100px"><a onclick="loadSave(event)" class="hover:cursor-pointer">load</a></div>
-    <div class="absolute top-0 right-10 text-right" style="width: 100px"><a onclick="manual()" class="hover:cursor-pointer">manual</a></div>
-    <div class="absolute top-20 right-10 text-right" style="width: 100px"><a onclick="resetSave()" class="hover:cursor-pointer">reset</a></div>
+    <div class="absolute top-0 right-10 text-right" style="width: 100px"><a onclick="resetSave()" class="hover:cursor-pointer">reset</a></div>
+    <div class="absolute top-20 right-10 text-right" style="width: 100px"><a onclick="document.getElementById('tutorial-window').title = parseInt(document.getElementById('tutorial-window').title) + 1
+        tutorial()"
+        class="hover:cursor-pointer" id="tutorial-switch">tutorial</a></div>
+    <div class="absolute inline-block border-dotted border-2 p-2 hover:cursor-pointer hidden bg-white" style="top: 3rem; right: 8rem; width: 20rem; border-color: Crimson;" title="0" onclick="tutorial()" id="tutorial-window">tutor</div>
 </body>
 </html>
