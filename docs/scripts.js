@@ -167,7 +167,7 @@ const  characterGenerator = {
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
-  console.log("start hp fix x3");
+  console.log("start hp fix x5");
 
   if (document.cookie == "") { 
     document.cookie = "char3=IiI=;";
@@ -852,7 +852,7 @@ function goDungeon(button) {
   damageReceived = 0; damageDealt = 0;
   damageReceivedUI.innerHTML = "-" + damageReceived;
   currentEncounter.hp = currentEncounter.basehp;
-  document.getElementById("encounter-healthbar").innerHTML = '<span class="text-green-500">' + currentEncounter.hp + '</span>';
+  document.getElementById("encounter-healthbar").innerHTML = `<span class="text-green-500">enemie's hp:</span>` + currentEncounter.hp;
 
   if (char != "" && char != undefined) {
     document.getElementById("player-effects").innerHTML = "";
