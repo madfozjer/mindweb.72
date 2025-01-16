@@ -293,10 +293,10 @@ function nextEncounter() {
 }
 
 function win() {
-  if(text.classList.contains("dark")) { text.classList.toggle("dark"); }
   updateUI();
   score += 2000;
   let text = document.getElementById("big-text");
+  if(text.classList.contains("dark")) { text.classList.toggle("dark"); }
   text.classList.toggle("hidden");
   let scr = finalScore();
   text.innerHTML = `<span>you won</span> <br>
