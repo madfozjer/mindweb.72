@@ -849,6 +849,7 @@ function goDungeon(button) {
   effects.hothand = 0;
   damageReceived = 0; damageDealt = 0;
   damageReceivedUI.innerHTML = "-" + damageReceived;
+  currentEncounter.hp = currentEncounter.basehp;
 
   if (char != "" && char != undefined) {
     document.getElementById("player-effects").innerHTML = "";
