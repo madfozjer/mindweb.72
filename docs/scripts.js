@@ -154,11 +154,11 @@ const  characterGenerator = {
 
   returnGene(type) { //rewrite like this { empty: 99, energetic: 1 } out of 100
     if (type == "biohazard") { 
-      let list = ["empty", "empty", "energetic", 'energetic', 'IME', 'IME', 'IME', 'egalite',] //2 empty, 2 energetic, 3 IME, 1 egalite. unique: egalite
+      let list = ["empty", "empty", "energetic", 'energetic',  "sanchin", 'sanchin'] //2 empty, 2 energetic, 3 IME, 1 egalite. unique: sanchin
       return list[random(0, list.length)];
     }
     else if (type == "deadbones") {
-      let list = ["empty", "empty", "empty", "sanchin", 'sanchin', 'energetic', "energetic", 'energetic']; //3 empty, 2 sanchin, 3 energetic, unique: sanchin
+      let list = ["empty", "empty", "empty", 'energetic', "energetic", 'energetic', 'IME', 'IME', 'IME', 'egalite']; //3 empty, 2 sanchin, 3 energetic, 3 IME, unique: IME + egalite
       return list[random(0, list.length)];
     }
   }
@@ -852,7 +852,7 @@ function goDungeon(button) {
   damageReceived = 0; damageDealt = 0;
   damageReceivedUI.innerHTML = "-" + damageReceived;
   currentEncounter.hp = currentEncounter.basehp;
-  document.getElementById("encounter-healthbar").innerHTML = `<span class="text-green-500">enemie's hp:</span>` + currentEncounter.hp;
+  document.getElementById("encounter-healthbar").innerHTML = `<span class="text-green-500">enemie's hp:</span> ` + currentEncounter.hp;
 
   if (char != "" && char != undefined) {
     document.getElementById("player-effects").innerHTML = "";
