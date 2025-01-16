@@ -167,6 +167,8 @@ const  characterGenerator = {
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
+  console.log("start hp fix x2");
+
   if (document.cookie == "") { 
     document.cookie = "char3=IiI=;";
     document.cookie = "roll_biohazard=50;";
