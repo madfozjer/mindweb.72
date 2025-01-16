@@ -167,7 +167,7 @@ const  characterGenerator = {
 
 /*onload*/ //TODO cash current state
 window.onload = function() {  
-  console.log("start hp fix x2");
+  console.log("start hp fix x3");
 
   if (document.cookie == "") { 
     document.cookie = "char3=IiI=;";
