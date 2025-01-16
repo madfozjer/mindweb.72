@@ -852,8 +852,7 @@ function goDungeon(button) {
   damageReceived = 0; damageDealt = 0;
   damageReceivedUI.innerHTML = "-" + damageReceived;
   currentEncounter.hp = currentEncounter.basehp;
-  document.getElementById("encounter-healthbar").innerHTML = currentEncounter.hp;
-  console.log(currentEncounter.hp);
+  document.getElementById("encounter-healthbar").innerHTML = '<span class="text-green-500">' + currentEncounter.hp + '</span>';
 
   if (char != "" && char != undefined) {
     document.getElementById("player-effects").innerHTML = "";
