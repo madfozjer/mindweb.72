@@ -49,6 +49,7 @@ var rollREQbutton;
 var attackButtons = [];
 var damageDealtUI;
 var damageReceivedUI;
+var message = [];
 
 /*current state*/
 var diffuclty = 1;
@@ -100,9 +101,9 @@ var resourcesUI = {
   coins: {}
 }
 var characters = [""];
-const possibleGuns = {
-  BAB: ["BD", "BD", "BD", "BD", "ID"], 
-  PUN: ["CB", "CB", "JB"]
+const possibleGuns = { //add more combos, add one type additional guy for every type
+  BAB: [["BD","ID"]],
+  PUN: [["JB","CB"]]
 }
 
 var cookies = {};
@@ -138,18 +139,8 @@ const  characterGenerator = {
   },
 
   returnAttack(gun) {
-    let returnval;
-
-    Object.keys(possibleGuns).forEach(key => {
-      if (key == gun) {
-        key = key.toString();
-        let gun = possibleGuns[key];
-        let ran1 = random(0, gun.length); let ran2 = random(0, gun.length);
-        returnval = [gun[ran1], gun[ran2]];
-      }
-    })
-
-    return returnval;
+    let movelist = possibleGuns[gun];
+    return movelist[random(0, movelist.length)];
   },
 
   returnGene(type) { //rewrite like this { empty: 99, energetic: 1 } out of 100
@@ -274,6 +265,10 @@ window.onload = function() {
   }
 
   diceValues.length = 5; 
+
+  for (i = 0; i < 4; i++) {
+    message[i] = document.getElementById("msg-" + i);
+  }
 }
 
 /*game master*/
@@ -311,8 +306,7 @@ function lost() {
   let scr = finalScore();
   effects.hothand = 0;
   effects.curse = 0;
-  effects.shield = 0;4
-  if (resources.coins < 50) { resources.coins = Math.floor(resources.coins / 2); } else { resources.coins -= 40; }
+  effects.shield = 0;
   text.innerHTML = `<span>you lost</span> <br>
   <span class="text-lg">final score: ` + scr[0] + " " + `[` + scr[1] + `]`+ `</span>`;
   goDungeon();
@@ -334,6 +328,7 @@ function retreat() {
   text.innerHTML = `you've retreated`;
   goDungeon();  
   updateUI();
+  if (resources.coins < 50) { resources.coins = Math.floor(resources.coins / 2); } else { resources.coins -= 40; }
   char.hp = hp;
   encounterID = 1;
   diffuclty = 1;
@@ -390,7 +385,7 @@ function sendMoves() {
   
   damageDealtUI.innerHTML = "-" + damageDealt;
   damageReceivedUI.innerHTML = "-" + damageReceived;
-  score += damageDealt * 20;
+  score += damageDealt * 1;
   effect("pre");
   encounterMove(); //TODO await/async implementation
   turnEnd();
@@ -399,6 +394,8 @@ function sendMoves() {
   for (i = 1; i <= genesQuat; i++) {
     genetics(genes[i], "pre");
   }
+
+  updateUI();
 }
 
 function diceRoller() {
@@ -694,28 +691,33 @@ function generateCharacter() {
     }
   }
 
+  console.log(gunlist);
+
   let type = (ran < biohazard) ? "biohazard" : "deadbones";
   if (type == "biohazard") { Resources.biohazard += gunlist.length - 1; }
   else if (type == "deadbones") { Resources.deadbones += gunlist.length - 1; }
 
-  n = chance(2, 4);
-  movelist = []; movelist.length = n;
+  n = random(3, 6);
+  let movelist = []; 
+
   for (i = 1; i < gunlist.length; i++) {
-    for (a = 1; a < n; a++) {
-      let moves = characterGenerator.returnAttack(gunlist[i]);
-      let ran = random(0, moves.length);
-      movelist[a] = moves[ran];
+    let gunMoves = characterGenerator.returnAttack(gunlist[i].toString());
+    movelist[0] = "";
+    
+    for (a = 1; a <= gunMoves.length; a++) {
+      movelist[movelist.length  ] = gunMoves[a-1]; 
     }
   }
+  
+  console.log(movelist);
+  //console.log(n + " " + movelist.length);
 
-  for (i = 0; i < movelist.length; i++) {
-    for (a = 0; a < movelist.length; a++) {
-      if (movelist[i] == movelist[a] && a != i) {
-        movelist.splice(a, 1);
-      }
-    }
+  if (movelist.length > n) {
+    //console.log(movelist + " - inside shuffler");
+    movelist = shuffle(movelist);
+    movelist = movelist.slice(0, n);
   }
-
+  
   n = chance(2, 12); genelist.length = n;
   for (i = 1; i < n; i++) {
     let type = (ran < biohazard) ? "biohazard" : "deadbones";
@@ -776,17 +778,32 @@ function moveReceiver(move, receiver, index) { //automatic moves code
     switch (move) {
       case "BD":
         let ran = diceValues[random(2,5)];
-        dmg = ran - overHP; 
+        dmg = ran; 
         if (dmg < 0) { dmg = 0; }
-        hp -= dmg;
-        damageReceived += dmg;
+        console.log(effects.shield + " - before");
+        if (effects.shield > 0) { effects.shield -= dmg; }
+        if (effects.shield < 0) { effects.shield = 0; }
+        
+        console.log(effects.shield + " - after");
+        console.log(dmg - overHP + " - damage");
+        hp -= dmg - overHP;
+        damageReceived += dmg - overHP;
+        if (damageReceived < 0) { damageReceived = 0; }
+        updateUI();
         break;
       case "CC":
-        dmg = (1 + effects.curse) - overHP; 
+        dmg = (1 + effects.curse);
+        console.log(effects.shield + " - before");
         if (dmg < 0) { dmg = 0; }
-        hp -= dmg;
-        damageReceived += dmg; 
+        if (effects.shield > 0) { effects.shield -= dmg; }
+        if (effects.shield < 0) { effects.shield = 0; }
+        console.log(effects.shield + " - after");
+        hp -= dmg - overHP;
+        console.log(dmg - overHP + " - damage");
+        damageReceived += dmg - overHP;
+        if (damageReceived < 0) { damageReceived = 0; }
         effects.curse += damageDealt;
+        updateUI();
         if (effects.curse > 0) { document.getElementById("player-effects").innerHTML += `<span title="curse" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart'")>` + effects.curse + `👁️‍🗨️` + `<span>`}
         break;
       default:
@@ -816,20 +833,24 @@ function turnEnd() {
     endEncounter();
   }
 
-  score -= damageReceived * 30;
+  score -= damageReceived * 35;
 }
 
 function endEncounter() {
   score += diffuclty * 100;
   effects.curse = 0;
   nextEncounter();
-  effect("post");
+  clearMsg();
 }
 
 function encounterMove() {
+  effect("post");
   moveReceiver(currentEncounter.move, "player");
   damageReceivedUI.innerHTML = "-" + damageReceived;
   effects.curse += damageReceived;
+  if (damageReceived > 0) { preMsg(currentEncounter.name, damageReceived, "GoldenRod"); } else if (effects.shield > 0) { preMsg("shield", effects.shield, "Blue");}
+  if (effects.shield > 0) { document.getElementById("player-effects").innerHTML += `<span title="shield" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart')">` + effects.shield + `🔰` + `<span>`; }
+  if (effects.shield < 0) { effects.shield = 0; }
   turnsLeft--;
   document.getElementById("turns-left").innerHTML = turnsLeft;
 
@@ -842,6 +863,8 @@ function encounterMove() {
 
 /*ui manipulation*/
 function goDungeon(button) {
+  overHP = 0;
+  clearMsg();
   score = 0;
   turnsLeft = 16;
   diffuclty = 1;
@@ -941,19 +964,19 @@ function description(id) { //automatic descriptions + enemie descriptions
         charlistDescription.innerHTML = "<b>BLOODY FISTS</b><br> bandaged fingers flying into monsters chests <br> possible moves: JawBreak, Counter Block";
         break;
       case "energetic":
-        charlistDescription.innerHTML = "<b>energetic</b><br>a lot of energy in this legs and mind. and between legs also.";
+        charlistDescription.innerHTML = "<b>energetic</b><br>a lot of energy in this legs and mind. <br> +1 for FIRST slot.";
         break;
       case "spirit":
-        charlistDescription.innerHTML = "<b>spirit</b><br>if you believe enough, your damage becomes bigger.";
+        charlistDescription.innerHTML = "<b>spirit</b><br>if you believe enough, your damage becomes bigger. <br> +1 damage for EVERY move.";
         break;
       case "egalite":
-        charlistDescription.innerHTML = "<b>egalite</b><br>equality is the road to peace, right? <br> +1🎲 (including first) for every dice value";
+        charlistDescription.innerHTML = "<b>egalite</b><br>equality is the road to peace, right? <br> make every value the same one. <br> +1🎲 (including first) for every dice value";
         break;
       case "IME":
         charlistDescription.innerHTML = "<b>IME</b><br>can someone destroy a person in despair? <br> +1🧿 for every 1 point of damage received";
         break;
       case "sanchin":
-        charlistDescription.innerHTML = "<b>sanchin</b><br>ancient samurai breathing technique, that heals your lungs.";
+        charlistDescription.innerHTML = "<b>sanchin</b><br>ancient samurai breathing technique, that heals your lungs. <br> +1 health point every turn.";
         break;
       case "sousid":
         charlistDescription.innerHTML = "<b>sousid</b><br>spider-like guy next door.<br>possible moves: Bat Drive!.";
@@ -965,7 +988,7 @@ function description(id) { //automatic descriptions + enemie descriptions
         charlistDescription.innerHTML = "<b>shield</b><br>pretty self-explanatory.";
         break;
       case "hothand":
-        charlistDescription.innerHTML = "<b>hothand</b><br>additional damage for some moves, like JawBreak";
+        charlistDescription.innerHTML = "<b>hothand</b><br>additional damage for some moves, like JawBreak. <br> +1 damage for every 🔥 for special moves like JawBreak.";
         break;  
       case "curse":
         charlistDescription.innerHTML = "<b>curse</b><br>gonna hurt when someone OLD attacks you";
@@ -1144,12 +1167,10 @@ function effect(mode) {
   }
 
   if ("post") {
-    let div = document.getElementById("player-effects");
     overHP += effects.shield;
+    console.log(overHP + " - overHP");
     if (genes.toString().includes("IME")) { div.innerHTML += `<span title="spirit" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart'")>` + `🧿` + `<span>`}
-    if (effects.shield > 0) { effects.shield -= 6; }
-    if (effects.shield > 0) { div.innerHTML += `<span title="shield" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart')">` + effects.shield + `🔰` + `<span>`; }
-    if (effects.shield < 0) { effects.shield = 0; }
+    //if (effects.shield > 0) { effects.shield -= 6; }
   }
 }
 
@@ -1326,11 +1347,11 @@ function resetSave() {
 function storyBoard(text) {
   switch (text) {
     case "start":
-      if (cookies.story_read < 1) {
+      if (cookies.story_read < 0) {
         if (bigInfo.classList.contains("hidden")) { bigInfo.classList.toggle('hidden'); }
         bigInfo.innerHTML = 
         `so, your name is (custom name). you are in charge of this operation now.
-         your main objective is pretty simple: <b>get in, survive for 12 turns, defeat the last enemy and retreat.</b>
+         your main objective is pretty simple: <b>get in, survive for 16 turns, defeat the last enemy and win.</b>
          if you feel that you do not have enough time - <b>retreat immediately</b>. any mistake will have consequences in the form of operator's death.
          good luck in your search for magical fuel. sincerely, polkovnik.`;
         document.cookie = 'story_read=1';
@@ -1430,7 +1451,7 @@ function tutorial() {
       tutorial.style.width = "25rem";
       break;
     case 15: //
-      tutorial.innerHTML = "below you can see enemie's hp, your hp, enemies gone, your damage and enemies damage to you last turn and turns left.";
+      tutorial.innerHTML = "below you can see <span class='text-green-500'>enemie's hp</span>, <span class='text-red-500'>your hp</span>, <span class=''>enemies gone</span>, <span class='text-green-600'>damage received</span> and <span class='text-red-800'>dealt damage</span> to you last turn and <span class='text-purple-800'>turns left.</span>";
       tutorial.style.left = "65rem";
       tutorial.style.top = "25rem";
       tutorial.style.width = "25rem";
@@ -1461,4 +1482,100 @@ function tutorial() {
 
   if (phase < 2) { tutorial.classList.toggle("hidden"); }
   if (phase > 0) tutorial.title = parseInt(tutorial.title) + 1;
+}
+
+function shuffle(array) {
+  let currentIndex = array.length;
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+
+    // Pick a remaining element...
+    let randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+}
+
+function sendMsg(text, color) {
+  let i = countMessages();
+
+  clearMsg();
+
+  console.log(i);
+  message[i].innerHTML = text;
+  message[i].style.color = color;
+}
+
+function countMessages() {
+  let messageInt = 0;
+
+  for (i = 0; i < message.length; i++) {
+    if (message[i].innerHTML != "") 
+      messageInt++;
+  }
+
+  if (messageInt == 4) 
+    return 0;
+  else 
+    return messageInt;
+}
+
+function preMsg(event, val, color) {
+  let ran = random(0, 5);
+  switch (event) {
+    case "sousid": 
+      switch (ran) {
+        case 0:
+          sendMsg("your head hurts. this guy gave you <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+        case 1:
+          sendMsg("spider arms reached you. receive <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+        case 2:
+          sendMsg("you feel blood on your face. this was <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+        case 3:
+          sendMsg("this was pretty rough. receive <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+        case 4:
+          sendMsg("how many eyes he had? never mind, receive <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+      }
+    break;
+    case "vachta": 
+      console.log(ran); //another texts?
+      switch (ran) {
+        case 0:
+          sendMsg("old lady can fight. you receive <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+        case 1:
+          sendMsg("feer is all around you. your brain just takes <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+        case 2:
+          sendMsg("flying claws scratched your head. you take <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+        case 3:
+          sendMsg("ouch. you receive <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+        case 4:
+          sendMsg("ladies can fight. you receive <span style='color: black;'>" + val + " dmg.</span>", color);
+          break;
+      }
+    case "shield": //more texts
+    console.log("shield");
+      switch(ran) {
+        default:
+          sendMsg("you block encounter's attack with <span style='color: black;'>" + val + " shield.</span>", color);
+      }
+    break;
+  }
+}
+
+function clearMsg() {
+    for (a = 0; a < message.length; a++)
+      message[a].innerHTML = "";
 }

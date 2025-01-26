@@ -662,6 +662,10 @@ video {
   margin-right: auto;
 }
 
+.mt-8 {
+  margin-top: 2rem;
+}
+
 .block {
   display: block;
 }
