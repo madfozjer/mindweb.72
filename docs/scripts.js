@@ -50,6 +50,7 @@ var attackButtons = [];
 var damageDealtUI;
 var damageReceivedUI;
 var message = [];
+var nickname = "";
 
 /*current state*/
 var diffuclty = 1;
@@ -87,7 +88,8 @@ var genesList = [];
 var buildingList = ["", "HR", "REQ"];
 var charList = [];
 var resources = {
-  coins: 3
+  coins: 3,
+  exp: 1000
 };
 var rollResources = {
   biohazard: 50,
@@ -98,12 +100,13 @@ var rollResourcesUI = {
   deadbones: {}
 }
 var resourcesUI = {
-  coins: {}
+  coins: {},
 }
 var characters = [""];
 const possibleGuns = { //add more combos, add one type additional guy for every type
-  BAB: [["BD","ID"]],
-  PUN: [["JB","CB"]]
+  BAB: [["BD","ID"], ["ID","HD"], ["ID","BD"], ["HD","ID"]],
+  PUN: [["JB","CB"], ["UB", "CB"], ["CB", "JB"], ["CB", "UB"]],
+
 }
 
 var cookies = {};
@@ -159,6 +162,7 @@ const  characterGenerator = {
 /*onload*/ //TODO cash current state
 window.onload = function() {  
   console.log("start hp fix x5");
+  bigInfo = document.getElementById("biginfobox");
 
   if (document.cookie == "") { 
     document.cookie = "char3=IiI=;";
@@ -169,8 +173,13 @@ window.onload = function() {
     document.cookie = "coins=3;";
     document.cookie = "char2=IiI=";
     document.cookie = "story_read=0;";
+    document.cookie = "exp=1000;";
+    if (bigInfo.classList.contains("hidden")) { bigInfo.classList.toggle('hidden'); }
+    bigInfo.removeAttribute("onclick");
+    bigInfo.innerHTML = 
+    `provide your name <br>` + '<input type="text" id="nickname" class="p-1 border border-black">' + '<button type="button" class="ml-1 p-1 border border-black" onclick="setName()">approve</button>' + '<br> be careful, you cant change it later!';
   }
-  
+
   encounterList = generateEncounters(12);
   encounterHPbar = document.getElementById("encounter-healthbar");
   healthbar = document.getElementById("healthbar");
@@ -179,7 +188,6 @@ window.onload = function() {
   charlistDescription = document.getElementById("info");
   buildingHR = document.getElementById("HR-building");
   buildingREQ = document.getElementById("REQ-building");
-  bigInfo = document.getElementById("biginfobox");
   rollREQbutton =  document.getElementById("roll-REQ");
   buildingItems.length = 10;
   buildingList.length = 10;
@@ -195,12 +203,14 @@ window.onload = function() {
   rollResourcesUI.deadbones = document.getElementById("deadbones"); rollResourcesUI.deadbones.innerHTML = "deadbones: " + rollResources.deadbones;
   damageDealtUI = document.getElementById("damage-dealt");
   damageReceivedUI = document.getElementById("damage-received");
-  console.log(document.cookie);
   var cookie = document.cookie.split(';').map(cookie => cookie.split('=')).reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: decodeURIComponent(value) }), {});
   cookies = cookie;
+  console.log(cookies);
   resources.coins = parseInt(cookies.coins);
+  resources.exp = parseInt(cookies.exp);
   rollResources.biohazard = parseInt(cookies.roll_biohazard);
   rollResources.deadbones = parseInt(cookies.roll_deadbones);
+  nickname = cookies.name;
   
   if (atob(cookies.char1) != 'undefined') { charList[0] = JSON.parse(atob(cookies.char1)); } else { charList[0] = ""; }
   if (atob(cookies.char2) != 'undefined') { charList[1] = JSON.parse(atob(cookies.char2)); } else { charList[1] = ""; }
@@ -237,7 +247,6 @@ window.onload = function() {
   }
 
   updateUI();
-  releaseInfo();
   
   for (i = 1; i < charlistItems.length; i++) {
     charlistItems[i] = document.getElementById("item-" + i);
@@ -274,9 +283,12 @@ window.onload = function() {
 /*game master*/
 function nextEncounter() {
   if (encounterID <= encounterList.length - 1) {
+   effects.shield = 0;
+   effects.curse = 0;
    resources.coins += parseInt(Math.floor(currentEncounter.value * diffuclty));
    currentEncounter = encounterList[encounterID];
    diffuclty++;
+   effect("pre");
    encounterID++
    updateUI();
    currentEncounter.hp = Math.floor(currentEncounter.basehp + diffuclty * 3);
@@ -288,14 +300,17 @@ function nextEncounter() {
 }
 
 function win() {
-  updateUI();
-  score += 2000;
+  score += 200;
   let text = document.getElementById("big-text");
   if(text.classList.contains("dark")) { text.classList.toggle("dark"); }
   text.classList.toggle("hidden");
   let scr = finalScore();
+  console.log(scr);
+  resources.exp += scr[1];
+  document.getElementById("exp").innerHTML = resources.exp;
   text.innerHTML = `<span>you won</span> <br>
   <span class="text-lg">final score: ` + scr[0] + " " + `[` + scr[1] + `]`+ `</span>`;
+  updateUI();
   goDungeon();
 }
 
@@ -691,8 +706,6 @@ function generateCharacter() {
     }
   }
 
-  console.log(gunlist);
-
   let type = (ran < biohazard) ? "biohazard" : "deadbones";
   if (type == "biohazard") { Resources.biohazard += gunlist.length - 1; }
   else if (type == "deadbones") { Resources.deadbones += gunlist.length - 1; }
@@ -709,11 +722,8 @@ function generateCharacter() {
     }
   }
   
-  console.log(movelist);
-  //console.log(n + " " + movelist.length);
 
   if (movelist.length > n) {
-    //console.log(movelist + " - inside shuffler");
     movelist = shuffle(movelist);
     movelist = movelist.slice(0, n);
   }
@@ -751,6 +761,7 @@ function moveReceiver(move, receiver, index) { //automatic moves code
   if (receiver == currentEncounter) {
     let random;
     let counter;
+    let dmg
     switch (move) {
       case "BD-move":
         random = diceValues[index] + effects.spirit;
@@ -764,10 +775,20 @@ function moveReceiver(move, receiver, index) { //automatic moves code
         effects.shield += diceValues[index];
         break;
       case "JB-move":
-        let dmg = 1 + effects.hothand;
+        dmg = 1 + effects.hothand;
         if (diceValues[index] > 4 && diceValues[index] < 7) { effects.hothand++; }
         receiver.hp -= dmg;
         damageDealt += dmg;
+        break;
+      case "UB-move":
+        dmg = (diceValues[index] * 2) - effects.hothand;
+        if (diceValues[index] > 4 && diceValues[index] < 7) { effects.hothand++; }
+        receiver.hp -= dmg;
+        damageDealt += dmg;
+        break;
+      case "HD-move":
+        dmg = diceValues[index] * 3;
+        if (diceValues[index] >= 5) { receiver.hp -= dmg; damageDealt += dmg; } else { dmg = 1; receiver.hp -= dmg; damageDealt += dmg; }
         break;
       default:
         console.log("move receiver error");
@@ -778,29 +799,24 @@ function moveReceiver(move, receiver, index) { //automatic moves code
     switch (move) {
       case "BD":
         let ran = diceValues[random(2,5)];
-        dmg = ran; 
+        dmg = ran - overHP;      
+        if (effects.shield > 0) { dmg -= effects.shield; }
         if (dmg < 0) { dmg = 0; }
-        console.log(effects.shield + " - before");
-        if (effects.shield > 0) { effects.shield -= dmg; }
-        if (effects.shield < 0) { effects.shield = 0; }
-        
-        console.log(effects.shield + " - after");
-        console.log(dmg - overHP + " - damage");
-        hp -= dmg - overHP;
-        damageReceived += dmg - overHP;
+        if (effects.shield > 0) { effects.shield -= ran; }
+        if (effects.shield < 0) { effects.shield = 0; } 
+        hp -= dmg;
+        damageReceived += dmg;
         if (damageReceived < 0) { damageReceived = 0; }
         updateUI();
         break;
       case "CC":
-        dmg = (1 + effects.curse);
-        console.log(effects.shield + " - before");
+        dmg = (effects.curse + 1) - overHP;
+        if (effects.shield > 0) { dmg -= effects.shield; }
         if (dmg < 0) { dmg = 0; }
-        if (effects.shield > 0) { effects.shield -= dmg; }
+        if (effects.shield > 0) { effects.shield -= effects.curse + 1; }
         if (effects.shield < 0) { effects.shield = 0; }
-        console.log(effects.shield + " - after");
-        hp -= dmg - overHP;
-        console.log(dmg - overHP + " - damage");
-        damageReceived += dmg - overHP;
+        hp -= dmg;
+        damageReceived += dmg;
         if (damageReceived < 0) { damageReceived = 0; }
         effects.curse += damageDealt;
         updateUI();
@@ -814,11 +830,11 @@ function moveReceiver(move, receiver, index) { //automatic moves code
 
 function reverse(n) {
   if (n == 6) { return 1 }
-  else if (n == 5) { return 1; }
-  else if (n == 4) { return 2; }
-  else if (n == 3) { return 2; }
-  else if (n == 2) { return 3; }
-  else if (n == 1) { return 3; }
+  else if (n == 5) { return 2; }
+  else if (n == 4) { return 3; }
+  else if (n == 3) { return 4; }
+  else if (n == 2) { return 5; }
+  else if (n == 1) { return 6; }
   else if (n >= 7) { return 0; }
 }
 
@@ -841,6 +857,7 @@ function endEncounter() {
   effects.curse = 0;
   nextEncounter();
   clearMsg();
+  preMsg("beaten", -1, "Violet");
 }
 
 function encounterMove() {
@@ -848,6 +865,7 @@ function encounterMove() {
   moveReceiver(currentEncounter.move, "player");
   damageReceivedUI.innerHTML = "-" + damageReceived;
   effects.curse += damageReceived;
+  console.log(effects.shield + " - shield");
   if (damageReceived > 0) { preMsg(currentEncounter.name, damageReceived, "GoldenRod"); } else if (effects.shield > 0) { preMsg("shield", effects.shield, "Blue");}
   if (effects.shield > 0) { document.getElementById("player-effects").innerHTML += `<span title="shield" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart')">` + effects.shield + `🔰` + `<span>`; }
   if (effects.shield < 0) { effects.shield = 0; }
@@ -951,11 +969,17 @@ function description(id) { //automatic descriptions + enemie descriptions
       case "JB-move":
         charlistDescription.innerHTML = "<b>JawBreak</b><br>straight jawbreak and out. <br>dmg: 1 + <span class='text-orange-400 font-bold'>hothand</span>.<br>receive +1🔥 for every 5 and 6";
         break;
+      case "UB-move":
+        charlistDescription.innerHTML = "<b>UpperCut</b><br>breathing is key when you want to punch thru someones face. <br>dmg: x2 d6 - <span class='text-orange-400 font-bold'>hothand</span>.<br>receive +1🔥 for every 5 and 6";
+        break;
       case "ID-move":
         charlistDescription.innerHTML = "<b>Iternal Drive</b><br> pull back and relax <br>+3 shield for every gene🧬 you have";
         break;
       case "CB-move":
         charlistDescription.innerHTML = "<b>Counter Block</b><br> push enemies back and thrive <br>effect: shield <d6>";
+        break;
+      case "HD-move": 
+        charlistDescription.innerHTML = "<b>Home Run!</b><br> ball is in the air, just hit it <br> if 🎲 value bigger/exactly 5, dmg x3. if not, dmg 1.";
         break;
       case "BAB":
         charlistDescription.innerHTML = "<b>BASKETBALL BAT</b><br>bone crushing bonk stick <br> possible moves: BD";
@@ -995,6 +1019,9 @@ function description(id) { //automatic descriptions + enemie descriptions
         break;    
       case "coins":
         charlistDescription.innerHTML = "this is your coins, you can splash them";
+        break;    
+      case "exp":
+        charlistDescription.innerHTML = "your experience is just a number for now. don't be afraid to flex it on the internet.";
         break;    
     case "standart":
       selectAnimation("", "mouseLeave");
@@ -1083,6 +1110,7 @@ function updateUI() {
   else if (rollResources.deadbones < 0) { rollResources.deadbones = 0; }
 
   healthbar.innerHTML = "<span class='text-red-500'>your hp:</span> " + hp;
+  document.getElementById("exp").innerHTML = resources.exp;
   document.getElementById("turns-left").innerHTML = turnsLeft;
   resourcesUI.coins.innerHTML = "@" + resources.coins;
   document.cookie = "coins=" + resources.coins;
@@ -1094,6 +1122,7 @@ function updateUI() {
   document.cookie = "char1=" + btoa(JSON.stringify(charList[0])); 
   document.cookie = "char2=" + btoa(JSON.stringify(charList[1])); 
   document.cookie = "char3=" + btoa(JSON.stringify(charList[2])); 
+  document.cookie = "exp=" + resources.exp;
 
   for (i = 0; i < 3; i++) {
     document.getElementById("REQcharacter-" + i).innerHTML = document.getElementById("character-" + i).innerHTML;
@@ -1114,6 +1143,10 @@ function returnMoveColor(move) {
       return "DarkSlateBlue";
     case "JB":
       return "ForestGreen";
+    case "HD":
+      return "Crimson";
+    case "UB":
+      return "DarkOliveGreen";
   }
 }
 
@@ -1167,8 +1200,8 @@ function effect(mode) {
   }
 
   if ("post") {
+    let div = document.getElementById("player-effects");
     overHP += effects.shield;
-    console.log(overHP + " - overHP");
     if (genes.toString().includes("IME")) { div.innerHTML += `<span title="spirit" class="hover:cursor-help" onmouseover="description(event.target.title)" onmouseleave="description('standart'")>` + `🧿` + `<span>`}
     //if (effects.shield > 0) { effects.shield -= 6; }
   }
@@ -1257,7 +1290,7 @@ function newSave(content) {
   var a = document.createElement("a");  
   a.href = window.URL.createObjectURL(new Blob([content], {type: "text/plain"}));
   let date = new Date();
-  a.download = date.getFullYear() + "" + date.getMonth() + "" + date.getDate() + "" + date.getHours() + "" + date.getMinutes() + "" + date.getSeconds() + ".mw72";
+  a.download = nickname + "_" + date.getMonth() + "" + date.getDate() + date.getMinutes() + "" + date.getSeconds() + ".mw72";
   a.click(); 
 }
 
@@ -1276,6 +1309,7 @@ function readSave(e) {
     resources.coins = parseInt(data.coins);
     rollResources.biohazard = data.roll_biohazard;
     rollResources.deadbones = data.roll_deadbones;
+    resources.exp = parseInt(data.exp);
 
     if (atob(data.char1) != '""') { 
       charList[0] = JSON.parse(atob(data.char1)); 
@@ -1328,11 +1362,10 @@ function readSave(e) {
 function releaseInfo() {
   if (cookies.patch_notes_checked < 1) {
     document.cookie = 'patch_notes_checked=1';
-    console.log(bigInfo.classList.contains("hidden"));
-    if (bigInfo.classList.contains("hidden")) { console.log("first patch note;"); bigInfo.classList.toggle('hidden'); console.log(bigInfo.classList.contains("hidden"));}
     bigInfo.innerHTML = 
     `patch notes: <br>` +
     `v1. demo release!`;
+    if (bigInfo.classList.contains("hidden")) { bigInfo.classList.toggle('hidden'); }
   } 
 }
 
@@ -1347,14 +1380,15 @@ function resetSave() {
 function storyBoard(text) {
   switch (text) {
     case "start":
-      if (cookies.story_read < 0) {
-        if (bigInfo.classList.contains("hidden")) { bigInfo.classList.toggle('hidden'); }
+      if (cookies.story_read < 1) {
+        document.cookie = 'story_read=1';
+        cookies.story_read = 1;
         bigInfo.innerHTML = 
-        `so, your name is (custom name). you are in charge of this operation now.
+        `so, your name is ` + nickname + `? nevermind, you are in charge of this operation now.
          your main objective is pretty simple: <b>get in, survive for 16 turns, defeat the last enemy and win.</b>
          if you feel that you do not have enough time - <b>retreat immediately</b>. any mistake will have consequences in the form of operator's death.
          good luck in your search for magical fuel. sincerely, polkovnik.`;
-        document.cookie = 'story_read=1';
+        if (bigInfo.classList.contains("hidden")) { bigInfo.classList.toggle('hidden'); }
         break;
       }
   }
@@ -1366,7 +1400,6 @@ function tutorial() {
 
   if (!document.getElementById("tutorial-switch").classList.contains("hidden")) document.getElementById("tutorial-switch").classList.toggle("hidden"); 
 
-  console.log(phase);
   switch(phase) {
     case 1:
       tutorial.innerHTML = "this tutorial will guide you through basic rules of the game. <br><br> you can click on me to go further (you can do it with every infobox)";
@@ -1505,7 +1538,6 @@ function sendMsg(text, color) {
 
   clearMsg();
 
-  console.log(i);
   message[i].innerHTML = text;
   message[i].style.color = color;
 }
@@ -1547,7 +1579,6 @@ function preMsg(event, val, color) {
       }
     break;
     case "vachta": 
-      console.log(ran); //another texts?
       switch (ran) {
         case 0:
           sendMsg("old lady can fight. you receive <span style='color: black;'>" + val + " dmg.</span>", color);
@@ -1565,11 +1596,42 @@ function preMsg(event, val, color) {
           sendMsg("ladies can fight. you receive <span style='color: black;'>" + val + " dmg.</span>", color);
           break;
       }
-    case "shield": //more texts
-    console.log("shield");
+    break;
+    case "shield": 
+      console.log("shield");
       switch(ran) {
-        default:
+        case 0:
           sendMsg("you block encounter's attack with <span style='color: black;'>" + val + " shield.</span>", color);
+          break;
+        case 1:
+          sendMsg("you got it and block it with <span style='color: black;'>" + val + " shield.</span>", color);
+          break;
+        case 2:
+          sendMsg("blocked it with <span style='color: black;'>" + val + " shield.</span>", color);
+          break;
+        case 3:
+          sendMsg("you shielded up with <span style='color: black;'>" + val + " shield.</span>", color);
+          break;
+      }
+    break;
+    case "beaten":
+      console.log("beaten");
+      switch(ran) {
+        case 0:
+          sendMsg("enemy was beaten up hardly. shield is gone.", color);
+          break;
+        case 1:
+          sendMsg("your head doesnt hurt anymore. weird guy is gone. shield is gone.", color)
+          break;
+        case 2:
+          sendMsg("only weird black fluid left. shield is gone.", color);
+          break;
+        case 3:
+          sendMsg("this encounter was pretty weird. its good this is over. shield is gone.", color);
+          break;
+        case 4:
+          sendMsg("life goes by pretty fast like this mobs ass. shield is gone.", color);
+          break;
       }
     break;
   }
@@ -1578,4 +1640,12 @@ function preMsg(event, val, color) {
 function clearMsg() {
     for (a = 0; a < message.length; a++)
       message[a].innerHTML = "";
+}
+
+function setName() {
+  if (!bigInfo.classList.contains("hidden")) { bigInfo.classList.toggle('hidden'); }
+  nickname = document.getElementById("nickname").value;
+  document.cookie = "name=" + nickname;
+  bigInfo.setAttribute("onclick","hideMe(event.target)");
+  releaseInfo();
 }

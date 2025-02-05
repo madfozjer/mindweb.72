@@ -642,6 +642,10 @@ video {
   margin-bottom: auto;
 }
 
+.ml-1 {
+  margin-left: 0.25rem;
+}
+
 .ml-4 {
   margin-left: 1rem;
 }
@@ -794,6 +798,10 @@ video {
   overflow: hidden;
 }
 
+.border {
+  border-width: 1px;
+}
+
 .border-2 {
   border-width: 2px;
 }
@@ -812,6 +820,11 @@ video {
 
 .border-dotted {
   border-style: dotted;
+}
+
+.border-black {
+  --tw-border-opacity: 1;
+  border-color: rgb(0 0 0 / var(--tw-border-opacity, 1));
 }
 
 .border-gray-500 {
